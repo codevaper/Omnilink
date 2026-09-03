@@ -1,0 +1,1974 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>OmniLink Official Dashboard</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f4f7fb;
+            color: #172033;
+        }
+
+        .header {
+            background: #172033;
+            color: white;
+            padding: 24px 30px;
+        }
+
+        .header-inner {
+            width: min(1400px, 94%);
+            margin: auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .header h1 {
+            margin: 0 0 6px;
+            font-size: 28px;
+        }
+
+        .header p {
+            margin: 0;
+            color: #cbd5e1;
+        }
+
+        .badge {
+            background: #0f766e;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 999px;
+            font-weight: 700;
+            font-size: 13px;
+        }
+
+        .container {
+            width: min(1400px, 94%);
+            margin: 24px auto 50px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .stat {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.07);
+        }
+
+        .stat-label {
+            color: #64748b;
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .stat-value {
+            font-size: 30px;
+            font-weight: 800;
+            margin-top: 8px;
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 1.7fr 1fr;
+            gap: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 18px;
+            padding: 22px;
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.07);
+            margin-bottom: 20px;
+        }
+
+        .card h2 {
+            margin-top: 0;
+            font-size: 20px;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+
+        select,
+        input {
+            border: 1px solid #cbd5e1;
+            border-radius: 9px;
+            padding: 10px 12px;
+            font-size: 14px;
+        }
+
+        button {
+            border: 0;
+            border-radius: 9px;
+            padding: 9px 12px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-right: 5px;
+            margin-bottom: 5px;
+        }
+
+        .primary {
+            background: #2563eb;
+            color: white;
+        }
+
+        .approve {
+            background: #15803d;
+            color: white;
+        }
+
+        .reject {
+            background: #dc2626;
+            color: white;
+        }
+
+        .secondary {
+            background: #475569;
+            color: white;
+        }
+
+        button:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            text-align: left;
+            padding: 11px 9px;
+            border-bottom: 1px solid #e2e8f0;
+            vertical-align: top;
+        }
+
+        th {
+            background: #f8fafc;
+            font-size: 13px;
+        }
+
+        td {
+            font-size: 14px;
+        }
+
+        .pill {
+            display: inline-block;
+            padding: 5px 9px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .pill-submitted {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .pill-review {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .pill-approved {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .pill-rejected {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .pill-other {
+            background: #e2e8f0;
+            color: #334155;
+        }
+
+        .details {
+            display: none;
+        }
+
+        .details-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .detail-box {
+            background: #f8fafc;
+            border-radius: 10px;
+            padding: 12px;
+        }
+
+        .detail-label {
+            color: #64748b;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .detail-value {
+            margin-top: 5px;
+            word-break: break-word;
+        }
+
+        .form-json {
+            margin-top: 14px;
+            padding: 14px;
+            background: #0f172a;
+            color: #e2e8f0;
+            border-radius: 10px;
+            font-family: Consolas, monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            overflow-x: auto;
+        }
+
+        .timeline-item {
+            padding: 12px 0 12px 18px;
+            border-left: 2px solid #cbd5e1;
+        }
+
+        .timeline-title {
+            font-weight: 700;
+        }
+
+        .timeline-time {
+            margin-top: 4px;
+            color: #64748b;
+            font-size: 12px;
+        }
+
+        .empty {
+            color: #64748b;
+            padding: 20px 0;
+        }
+
+        .error {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 12px;
+            border-radius: 10px;
+            margin-top: 12px;
+        }
+
+        .success {
+            background: #dcfce7;
+            color: #166534;
+            padding: 12px;
+            border-radius: 10px;
+            margin-top: 12px;
+        }
+
+        .action-cell {
+            min-width: 190px;
+        }
+
+        @media (max-width: 1000px) {
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            .details-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="header">
+
+    <div class="header-inner">
+
+        <div>
+            <h1>
+                OmniLink Official Dashboard
+            </h1>
+
+            <p>
+                Unified citizen applications,
+                consent and workflow operations
+            </p>
+        </div>
+
+        <div class="badge">
+            SYNTHETIC DEMO DATA
+        </div>
+
+    </div>
+
+</div>
+
+
+<div class="container">
+
+    <div class="stats">
+
+        <div class="stat">
+            <div class="stat-label">
+                Citizens
+            </div>
+
+            <div
+                id="citizenCount"
+                class="stat-value">
+                -
+            </div>
+        </div>
+
+
+        <div class="stat">
+            <div class="stat-label">
+                Department Forms
+            </div>
+
+            <div
+                id="formCount"
+                class="stat-value">
+                -
+            </div>
+        </div>
+
+
+        <div class="stat">
+            <div class="stat-label">
+                Form Records
+            </div>
+
+            <div
+                id="recordCount"
+                class="stat-value">
+                888
+            </div>
+        </div>
+
+
+        <div class="stat">
+            <div class="stat-label">
+                Submitted Applications
+            </div>
+
+            <div
+                id="submissionCount"
+                class="stat-value">
+                -
+            </div>
+        </div>
+
+    </div>
+
+
+    <div class="stats">
+
+        <div class="stat">
+            <div class="stat-label">
+                Pending Officer Reviews
+            </div>
+
+            <div
+                id="reviewCount"
+                class="stat-value">
+                -
+            </div>
+        </div>
+
+
+        <div class="stat">
+            <div class="stat-label">
+                Approved
+            </div>
+
+            <div
+                id="approvedCount"
+                class="stat-value">
+                -
+            </div>
+        </div>
+
+
+        <div class="stat">
+            <div class="stat-label">
+                Rejected
+            </div>
+
+            <div
+                id="rejectedCount"
+                class="stat-value">
+                -
+            </div>
+        </div>
+
+
+        <div class="stat">
+            <div class="stat-label">
+                System
+            </div>
+
+            <div
+                id="systemStatus"
+                class="stat-value">
+                ...
+            </div>
+        </div>
+
+    </div>
+
+
+    <div class="layout">
+
+        <div>
+
+            <div class="card">
+
+                <h2>
+                    Applications
+                </h2>
+
+
+                <div class="toolbar">
+
+                    <select
+                        id="statusFilter"
+                        onchange="renderApplications()">
+
+                        <option value="ALL">
+                            All Statuses
+                        </option>
+
+                        <option value="SUBMITTED">
+                            Submitted
+                        </option>
+
+                        <option value="UNDER_REVIEW">
+                            Under Review
+                        </option>
+
+                        <option value="APPROVED">
+                            Approved
+                        </option>
+
+                        <option value="REJECTED">
+                            Rejected
+                        </option>
+
+                    </select>
+
+
+                    <select
+                        id="formFilter"
+                        onchange="renderApplications()">
+
+                        <option value="ALL">
+                            All Forms
+                        </option>
+
+                    </select>
+
+
+                    <button
+                        class="primary"
+                        onclick="loadEverything()">
+                        Refresh
+                    </button>
+
+                </div>
+
+
+                <div
+                    id="applicationMessage">
+                </div>
+
+
+                <div class="table-wrap">
+
+                    <table>
+
+                        <thead>
+
+                            <tr>
+                                <th>
+                                    Submission
+                                </th>
+
+                                <th>
+                                    Citizen
+                                </th>
+
+                                <th>
+                                    Form
+                                </th>
+
+                                <th>
+                                    Consent
+                                </th>
+
+                                <th>
+                                    Status
+                                </th>
+
+                                <th>
+                                    Submitted
+                                </th>
+
+                                <th>
+                                    Action
+                                </th>
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody
+                            id="applicationsBody">
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+
+            <div
+                class="card details"
+                id="detailsCard">
+
+                <h2>
+                    Application Details
+                </h2>
+
+                <div
+                    id="detailsContent">
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div>
+
+            <div class="card">
+
+                <h2>
+                    Workflow Queue
+                </h2>
+
+                <div id="queueContent">
+                </div>
+
+            </div>
+
+
+            <div class="card">
+
+                <h2>
+                    System Services
+                </h2>
+
+                <div id="servicesContent">
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+const SUBMISSION_API =
+    "http://localhost:5009";
+
+const CONSENT_API =
+    "http://localhost:5007";
+
+const VAULT_API =
+    "http://localhost:5006";
+
+const PREFILL_API =
+    "http://localhost:5008";
+
+const CAMUNDA_API =
+    "http://localhost:8080/engine-rest";
+
+
+let applications = [];
+
+let tasks = [];
+
+let taskMap = {};
+
+
+async function getJson(
+    url,
+    options = {}
+) {
+
+    const response =
+        await fetch(
+            url,
+            options
+        );
+
+    const text =
+        await response.text();
+
+    let data = {};
+
+    try {
+
+        data =
+            text
+                ? JSON.parse(text)
+                : {};
+
+    } catch {
+
+        data = {
+            raw: text
+        };
+    }
+
+    if (!response.ok) {
+
+        throw new Error(
+            data.error ||
+            data.message ||
+            `HTTP ${response.status}`
+        );
+    }
+
+    return data;
+}
+
+
+function formatDate(
+    value
+) {
+
+    if (!value) {
+        return "-";
+    }
+
+    try {
+
+        return new Date(
+            value
+        ).toLocaleString();
+
+    } catch {
+
+        return value;
+    }
+}
+
+
+function statusPill(
+    status
+) {
+
+    const classes = {
+
+        SUBMITTED:
+            "pill-submitted",
+
+        UNDER_REVIEW:
+            "pill-review",
+
+        APPROVED:
+            "pill-approved",
+
+        REJECTED:
+            "pill-rejected"
+
+    };
+
+    const className =
+        classes[status]
+        ||
+        "pill-other";
+
+    return `
+        <span
+            class="pill ${className}">
+            ${escapeHtml(
+                status || "UNKNOWN"
+            )}
+        </span>
+    `;
+}
+
+
+async function loadCitizens() {
+
+    const data =
+        await getJson(
+            `${VAULT_API}/citizens`
+        );
+
+    return data.count || 0;
+}
+
+
+async function loadForms() {
+
+    const data =
+        await getJson(
+            `${PREFILL_API}/forms`
+        );
+
+    const select =
+        document.getElementById(
+            "formFilter"
+        );
+
+    const selectedValue =
+        select.value || "ALL";
+
+
+    while (
+        select.options.length > 1
+    ) {
+        select.remove(1);
+    }
+
+
+    for (
+        const form
+        of data.forms
+    ) {
+
+        const option =
+            document.createElement(
+                "option"
+            );
+
+        option.value =
+            form.form_key;
+
+        option.textContent =
+            form.form_key
+                .replaceAll(
+                    "_",
+                    " "
+                )
+                .replace(
+                    /\b\w/g,
+                    char =>
+                        char.toUpperCase()
+                );
+
+        select.appendChild(
+            option
+        );
+    }
+
+
+    const available =
+        Array.from(
+            select.options
+        ).some(
+            option =>
+                option.value ===
+                selectedValue
+        );
+
+
+    select.value =
+        available
+            ? selectedValue
+            : "ALL";
+
+
+    return data;
+}
+
+
+async function loadSubmissions() {
+
+    const data =
+        await getJson(
+            `${SUBMISSION_API}/submissions`
+        );
+
+    applications =
+        data.submissions || [];
+
+    document.getElementById(
+        "submissionCount"
+    ).textContent =
+        data.count || 0;
+}
+
+
+async function loadTasks() {
+
+    const url =
+        `${CAMUNDA_API}/task` +
+        `?processDefinitionKey=` +
+        `citizen_application_review` +
+        `&active=true`;
+
+
+    const data =
+        await getJson(
+            url
+        );
+
+
+    /*
+     * Browser response from Camunda is a DIRECT
+     * array:
+     *
+     * [
+     *   {...},
+     *   {...}
+     * ]
+     *
+     * Some environments may return:
+     *
+     * {
+     *   value: [...]
+     * }
+     *
+     * Support both formats.
+     */
+
+    const taskArray =
+        Array.isArray(data)
+            ? data
+            : (
+                Array.isArray(data.value)
+                    ? data.value
+                    : []
+            );
+
+
+    tasks =
+        taskArray;
+
+
+    taskMap = {};
+
+
+    /*
+     * Resolve each Camunda task's process instance.
+     *
+     * The process instance contains:
+     *
+     * businessKey =
+     * submission_id
+     *
+     * Example:
+     *
+     * SUB-C6D5A2F84237
+     */
+
+    for (
+        const task
+        of taskArray
+    ) {
+
+        try {
+
+            const process =
+                await getJson(
+                    `${CAMUNDA_API}/process-instance/` +
+                    `${encodeURIComponent(
+                        task.processInstanceId
+                    )}`
+                );
+
+
+            const submissionId =
+                process.businessKey;
+
+
+            if (submissionId) {
+
+                taskMap[
+                    submissionId
+                ] = task;
+
+            }
+
+        } catch (error) {
+
+            console.warn(
+                "Could not resolve Camunda process",
+                task.processInstanceId,
+                error
+            );
+        }
+    }
+
+
+    document.getElementById(
+        "reviewCount"
+    ).textContent =
+        taskArray.length;
+
+
+    return taskArray;
+}
+
+
+async function loadStatistics() {
+
+    let approved =
+        0;
+
+    let rejected =
+        0;
+
+
+    for (
+        const application
+        of applications
+    ) {
+
+        if (
+            application.status ===
+            "APPROVED"
+        ) {
+
+            approved++;
+        }
+
+
+        if (
+            application.status ===
+            "REJECTED"
+        ) {
+
+            rejected++;
+        }
+    }
+
+
+    document.getElementById(
+        "approvedCount"
+    ).textContent =
+        approved;
+
+
+    document.getElementById(
+        "rejectedCount"
+    ).textContent =
+        rejected;
+}
+
+
+function renderApplications() {
+
+    const status =
+        document.getElementById(
+            "statusFilter"
+        ).value;
+
+
+    const form =
+        document.getElementById(
+            "formFilter"
+        ).value;
+
+
+    const filtered =
+        applications.filter(
+            application => {
+
+                const statusMatch =
+                    status === "ALL"
+                    ||
+                    application.status ===
+                    status;
+
+                const formMatch =
+                    form === "ALL"
+                    ||
+                    application.target_form ===
+                    form;
+
+
+                return (
+                    statusMatch
+                    &&
+                    formMatch
+                );
+            }
+        );
+
+
+    const body =
+        document.getElementById(
+            "applicationsBody"
+        );
+
+
+    body.innerHTML = "";
+
+
+    if (!filtered.length) {
+
+        body.innerHTML = `
+            <tr>
+
+                <td
+                    colspan="7"
+                    class="empty">
+
+                    No applications found.
+
+                </td>
+
+            </tr>
+        `;
+
+        return;
+    }
+
+
+    for (
+        const application
+        of filtered
+    ) {
+
+        const task =
+            taskMap[
+                application.submission_id
+            ];
+
+
+        let displayStatus =
+            application.status;
+
+
+        if (task) {
+
+            displayStatus =
+                "UNDER_REVIEW";
+        }
+
+
+        let actionHtml = `
+
+            <button
+                class="secondary"
+                onclick="showApplication(
+                    '${escapeHtml(
+                        application.submission_id
+                    )}'
+                )">
+
+                View
+
+            </button>
+
+        `;
+
+
+        if (task) {
+
+            actionHtml += `
+
+                <button
+                    class="approve"
+                    onclick="decideApplication(
+                        '${escapeHtml(
+                            task.id
+                        )}',
+                        true,
+                        '${escapeHtml(
+                            application.submission_id
+                        )}'
+                    )">
+
+                    Approve
+
+                </button>
+
+
+                <button
+                    class="reject"
+                    onclick="decideApplication(
+                        '${escapeHtml(
+                            task.id
+                        )}',
+                        false,
+                        '${escapeHtml(
+                            application.submission_id
+                        )}'
+                    )">
+
+                    Reject
+
+                </button>
+
+            `;
+        }
+
+
+        const row =
+            document.createElement(
+                "tr"
+            );
+
+
+        row.innerHTML = `
+
+            <td class="mono">
+
+                ${escapeHtml(
+                    application.submission_id
+                )}
+
+            </td>
+
+
+            <td>
+
+                ${escapeHtml(
+                    application.citizen_id
+                )}
+
+            </td>
+
+
+            <td>
+
+                ${escapeHtml(
+                    application.target_form
+                )}
+
+            </td>
+
+
+            <td>
+
+                #${escapeHtml(
+                    application.consent_id
+                )}
+
+            </td>
+
+
+            <td>
+
+                ${statusPill(
+                    displayStatus
+                )}
+
+            </td>
+
+
+            <td>
+
+                ${formatDate(
+                    application.created_at
+                )}
+
+            </td>
+
+
+            <td class="action-cell">
+
+                ${actionHtml}
+
+            </td>
+
+        `;
+
+
+        body.appendChild(
+            row
+        );
+    }
+}
+
+
+async function showApplication(
+    submissionId
+) {
+
+    try {
+
+        const data =
+            await getJson(
+                `${SUBMISSION_API}/submissions/` +
+                encodeURIComponent(
+                    submissionId
+                )
+            );
+
+
+        const details =
+            document.getElementById(
+                "detailsCard"
+            );
+
+
+        const content =
+            document.getElementById(
+                "detailsContent"
+            );
+
+
+        details.style.display =
+            "block";
+
+
+        const currentTask =
+            taskMap[
+                data.submission_id
+            ];
+
+
+        const currentStatus =
+            currentTask
+                ? "UNDER_REVIEW"
+                : data.status;
+
+
+        content.innerHTML = `
+
+            <div class="details-grid">
+
+                <div class="detail-box">
+
+                    <div class="detail-label">
+                        Submission ID
+                    </div>
+
+                    <div class="detail-value mono">
+
+                        ${escapeHtml(
+                            data.submission_id
+                        )}
+
+                    </div>
+
+                </div>
+
+
+                <div class="detail-box">
+
+                    <div class="detail-label">
+                        Citizen ID
+                    </div>
+
+                    <div class="detail-value">
+
+                        ${escapeHtml(
+                            data.citizen_id
+                        )}
+
+                    </div>
+
+                </div>
+
+
+                <div class="detail-box">
+
+                    <div class="detail-label">
+                        Department Form
+                    </div>
+
+                    <div class="detail-value">
+
+                        ${escapeHtml(
+                            data.target_form
+                        )}
+
+                    </div>
+
+                </div>
+
+
+                <div class="detail-box">
+
+                    <div class="detail-label">
+                        Consent ID
+                    </div>
+
+                    <div class="detail-value">
+
+                        #${escapeHtml(
+                            data.consent_id
+                        )}
+
+                    </div>
+
+                </div>
+
+
+                <div class="detail-box">
+
+                    <div class="detail-label">
+                        Status
+                    </div>
+
+                    <div class="detail-value">
+
+                        ${statusPill(
+                            currentStatus
+                        )}
+
+                    </div>
+
+                </div>
+
+
+                <div class="detail-box">
+
+                    <div class="detail-label">
+                        Submitted
+                    </div>
+
+                    <div class="detail-value">
+
+                        ${formatDate(
+                            data.created_at
+                        )}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <h3>
+                Submitted Form Data
+            </h3>
+
+
+            <div class="form-json">
+
+                ${escapeHtml(
+                    JSON.stringify(
+                        data.form_data,
+                        null,
+                        2
+                    )
+                )}
+
+            </div>
+
+        `;
+
+
+        details.scrollIntoView({
+            behavior: "smooth"
+        });
+
+
+    } catch (error) {
+
+        showMessage(
+            "applicationMessage",
+            `Could not load application: ${error.message}`,
+            "error"
+        );
+    }
+}
+
+
+async function decideApplication(
+    taskId,
+    approved,
+    submissionId
+) {
+
+    const action =
+        approved
+            ? "approve"
+            : "reject";
+
+
+    const confirmed =
+        window.confirm(
+            `Are you sure you want to ${action} ${submissionId}?`
+        );
+
+
+    if (!confirmed) {
+        return;
+    }
+
+
+    try {
+
+        await getJson(
+            `${CAMUNDA_API}/task/` +
+            encodeURIComponent(
+                taskId
+            ) +
+            "/complete",
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type":
+                        "application/json"
+                },
+
+                body: JSON.stringify({
+                    variables: {
+
+                        approved: {
+
+                            value:
+                                approved,
+
+                            type:
+                                "Boolean"
+                        }
+                    }
+                })
+            }
+        );
+
+
+        const newStatus =
+            approved
+                ? "APPROVED"
+                : "REJECTED";
+
+
+        await getJson(
+            `${SUBMISSION_API}/submissions/` +
+            `${encodeURIComponent(
+                submissionId
+            )}/status`,
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type":
+                        "application/json"
+                },
+
+                body: JSON.stringify({
+
+                    status:
+                        newStatus,
+
+                    details: {
+
+                        source:
+                            "official_dashboard",
+
+                        task_id:
+                            taskId
+                    }
+                })
+            }
+        );
+
+
+        showMessage(
+            "applicationMessage",
+            `${submissionId} ${newStatus.toLowerCase()} successfully.`,
+            "success"
+        );
+
+
+        await loadEverything();
+
+    } catch (error) {
+
+        showMessage(
+            "applicationMessage",
+            `Decision failed: ${error.message}`,
+            "error"
+        );
+    }
+}
+
+
+function renderQueue() {
+
+    const container =
+        document.getElementById(
+            "queueContent"
+        );
+
+
+    container.innerHTML = "";
+
+
+    if (!tasks.length) {
+
+        container.innerHTML =
+            `<div class="empty">
+                No pending officer reviews.
+             </div>`;
+
+        return;
+    }
+
+
+    for (
+        const task
+        of tasks
+    ) {
+
+        const related =
+            Object.entries(
+                taskMap
+            ).find(
+                ([, mappedTask]) =>
+                    mappedTask.id ===
+                    task.id
+            );
+
+
+        const submissionId =
+            related
+                ? related[0]
+                : "Unknown";
+
+
+        container.innerHTML += `
+
+            <div class="timeline-item">
+
+                <div class="timeline-title">
+                    Officer Review
+                </div>
+
+
+                <div class="timeline-time">
+
+                    Submission:
+
+                    <span class="mono">
+
+                        ${escapeHtml(
+                            submissionId
+                        )}
+
+                    </span>
+
+                </div>
+
+
+                <div class="timeline-time">
+
+                    Task:
+
+                    <span class="mono">
+
+                        ${escapeHtml(
+                            task.id
+                        )}
+
+                    </span>
+
+                </div>
+
+
+                <div class="timeline-time">
+
+                    Created:
+
+                    ${formatDate(
+                        task.created
+                    )}
+
+                </div>
+
+
+                ${
+                    submissionId !== "Unknown"
+
+                    ?
+
+                    `
+                    <div style="margin-top:8px;">
+
+                        <button
+                            class="approve"
+                            onclick="decideApplication(
+                                '${escapeHtml(
+                                    task.id
+                                )}',
+                                true,
+                                '${escapeHtml(
+                                    submissionId
+                                )}'
+                            )">
+
+                            Approve
+
+                        </button>
+
+
+                        <button
+                            class="reject"
+                            onclick="decideApplication(
+                                '${escapeHtml(
+                                    task.id
+                                )}',
+                                false,
+                                '${escapeHtml(
+                                    submissionId
+                                )}'
+                            )">
+
+                            Reject
+
+                        </button>
+
+                    </div>
+                    `
+
+                    :
+
+                    `
+                    <div class="small">
+                        Process mapping unavailable.
+                    </div>
+                    `
+                }
+
+            </div>
+
+        `;
+    }
+}
+
+
+function renderServices(
+    serviceResults
+) {
+
+    const container =
+        document.getElementById(
+            "servicesContent"
+        );
+
+
+    container.innerHTML = "";
+
+
+    for (
+        const service
+        of serviceResults
+    ) {
+
+        container.innerHTML += `
+
+            <div
+                style="
+                    display:flex;
+                    justify-content:space-between;
+                    padding:9px 0;
+                    border-bottom:1px solid #e2e8f0;
+                "
+            >
+
+                <span>
+
+                    ${escapeHtml(
+                        service.name
+                    )}
+
+                </span>
+
+
+                <span class="pill ${
+                    service.ok
+                        ? "pill-approved"
+                        : "pill-rejected"
+                }">
+
+                    ${
+                        service.ok
+                            ? "ONLINE"
+                            : "ERROR"
+                    }
+
+                </span>
+
+            </div>
+
+        `;
+    }
+}
+
+
+async function checkServices() {
+
+    const checks = [
+
+        {
+            name:
+                "Citizen Vault",
+
+            url:
+                `${VAULT_API}/health`
+        },
+
+
+        {
+            name:
+                "Consent Service",
+
+            url:
+                `${CONSENT_API}/health`
+        },
+
+
+        {
+            name:
+                "Prefill Engine",
+
+            url:
+                `${PREFILL_API}/health`
+        },
+
+
+        {
+            name:
+                "Form Submission",
+
+            url:
+                `${SUBMISSION_API}/health`
+        },
+
+
+        {
+            name:
+                "Camunda",
+
+            url:
+                `${CAMUNDA_API}/process-definition`
+        }
+
+    ];
+
+
+    const results = [];
+
+
+    for (
+        const check
+        of checks
+    ) {
+
+        try {
+
+            await getJson(
+                check.url
+            );
+
+
+            results.push({
+
+                name:
+                    check.name,
+
+                ok:
+                    true
+            });
+
+
+        } catch {
+
+            results.push({
+
+                name:
+                    check.name,
+
+                ok:
+                    false
+            });
+        }
+    }
+
+
+    renderServices(
+        results
+    );
+
+
+    const allGood =
+        results.every(
+            item => item.ok
+        );
+
+
+    document.getElementById(
+        "systemStatus"
+    ).textContent =
+        allGood
+            ? "ONLINE"
+            : "CHECK";
+}
+
+
+async function loadEverything() {
+
+    try {
+
+        const [
+            citizenCount,
+            formsData
+        ] = await Promise.all([
+
+            loadCitizens(),
+
+            loadForms()
+
+        ]);
+
+
+        document.getElementById(
+            "citizenCount"
+        ).textContent =
+            citizenCount;
+
+
+        document.getElementById(
+            "formCount"
+        ).textContent =
+            formsData.count || 0;
+
+
+        await loadSubmissions();
+
+        await loadTasks();
+
+        await loadStatistics();
+
+        renderApplications();
+
+        renderQueue();
+
+        await checkServices();
+
+
+    } catch (error) {
+
+        showMessage(
+            "applicationMessage",
+            `Dashboard refresh failed: ${error.message}`,
+            "error"
+        );
+    }
+}
+
+
+function showMessage(
+    elementId,
+    message,
+    type
+) {
+
+    const element =
+        document.getElementById(
+            elementId
+        );
+
+
+    element.className =
+        type === "error"
+            ? "error"
+            : "success";
+
+
+    element.textContent =
+        message;
+}
+
+
+function escapeHtml(
+    value
+) {
+
+    return String(value)
+
+        .replaceAll(
+            "&",
+            "&amp;"
+        )
+
+        .replaceAll(
+            "<",
+            "&lt;"
+        )
+
+        .replaceAll(
+            ">",
+            "&gt;"
+        )
+
+        .replaceAll(
+            '"',
+            "&quot;"
+        )
+
+        .replaceAll(
+            "'",
+            "&#039;"
+        );
+}
+
+
+loadEverything();
+
+
+setInterval(
+    loadEverything,
+    5000
+);
+
+</script>
+
+</body>
+</html>

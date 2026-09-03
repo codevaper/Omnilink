@@ -1,0 +1,46 @@
+{
+  "first_name": [
+    "f_nme",
+    "applicant_fname",
+    "student_first"
+  ],
+  "last_name": [
+    "l_nme",
+    "applicant_lname",
+    "student_last"
+  ],
+  "father_or_guardian_name": [
+    "fth_nme",
+    "father_name",
+    "guardian_name"
+  ],
+  "address_line": [
+    "adr_ln1",
+    "address_line_1",
+    "addr1"
+  ],
+  "phone_number": [
+    "ph_no",
+    "contact_number",
+    "mobile"
+  ],
+  "pan_number": [
+    "pan_no",
+    "pan_number",
+    "pan_id"
+  ],
+  "record_id": [
+    "crd_no",
+    "permit_id",
+    "application_id"
+  ],
+  "application_date": [
+    "created_dt",
+    "application_date",
+    "apply_date"
+  ],
+  "income_amount": [
+    "inc_amt",
+    "annual_income"
+  ]
+}

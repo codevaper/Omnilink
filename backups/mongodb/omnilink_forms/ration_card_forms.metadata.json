@@ -1,0 +1,1 @@
+{"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_"},{"v":{"$numberInt":"2"},"key":{"citizen_ref":{"$numberInt":"1"}},"name":"citizen_ref_1"}],"uuid":"0ffc3e20cc4d4d2f986794bc6646f25c","collectionName":"ration_card_forms","type":"collection"}

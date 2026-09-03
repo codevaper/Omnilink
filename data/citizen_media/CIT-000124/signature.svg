@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg"
+width="500" height="180" viewBox="0 0 500 180">
+<rect width="500" height="180" fill="white"/>
+<path d="M45 80 C90 120 140 25 200 85 S300 35 410 90"
+fill="none"
+stroke="#1f2937"
+stroke-width="4"
+stroke-linecap="round"/>
+<text x="250" y="155"
+text-anchor="middle"
+font-family="Arial"
+font-size="12"
+fill="#6b7280">
+Synthetic signature - CIT-000124
+</text>
+</svg>

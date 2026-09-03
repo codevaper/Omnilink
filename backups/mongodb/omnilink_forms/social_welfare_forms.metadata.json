@@ -1,0 +1,1 @@
+{"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_"},{"v":{"$numberInt":"2"},"key":{"citizen_ref":{"$numberInt":"1"}},"name":"citizen_ref_1"}],"uuid":"c009350a6692415a9eb87b3221d6b813","collectionName":"social_welfare_forms","type":"collection"}

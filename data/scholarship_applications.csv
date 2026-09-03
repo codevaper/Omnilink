@@ -1,0 +1,6 @@
+student_first,student_last,guardian_name,addr1,mobile,scholarship_type,annual_income,application_id,pan_id,apply_date
+Priya,Sharma,Raj Kumar Sharma,"123 Gandhi Road, Sector 15",9876543210,merit_scholarship,25000,SCH2024001,ABCDE1234F,2024-01-20
+Amit,Patel,Vijay Kumar Patel,"456 Nehru Street, Block B",9876543211,need_based,30000,SCH2024002,FGHIJ5678K,2024-01-21
+Sunita,Singh,Ram Bahadur Singh,"789 MG Road, Phase 2",9876543212,sports_scholarship,22000,SCH2024003,LMNOP9012Q,2024-01-22
+Rajesh,Kumar,Mohan Lal Kumar,"321 Park Avenue, Zone A",9876543213,minority_scholarship,35000,SCH2024004,RSTUV3456W,2024-01-23
+Meera,Gupta,Anil Gupta,"654 Lake View, Sector 8",9876543214,merit_scholarship,28000,SCH2024005,XYZAB7890C,2024-01-24

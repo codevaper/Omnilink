@@ -1,0 +1,1 @@
+{"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_"},{"v":{"$numberInt":"2"},"key":{"citizen_ref":{"$numberInt":"1"}},"name":"citizen_ref_1"}],"uuid":"913120ff0357405a86a7ba735a83884f","collectionName":"employment_skill_forms","type":"collection"}

@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>OmniLink Citizen Services</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f7fb;
+            color: #172033;
+        }
+
+        .container {
+            max-width: 760px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 14px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+        }
+
+        h1 {
+            margin-top: 0;
+            font-size: 32px;
+        }
+
+        h2 {
+            margin-top: 0;
+        }
+
+        .subtitle {
+            color: #64748b;
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-top: 16px;
+            margin-bottom: 7px;
+            font-weight: bold;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 15px;
+        }
+
+        .consent-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 16px;
+            margin: 20px 0;
+        }
+
+        .consent-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .consent-row input {
+            width: auto;
+            margin-top: 4px;
+        }
+
+        button {
+            width: 100%;
+            padding: 13px;
+            margin-top: 20px;
+            border: 0;
+            border-radius: 8px;
+            background: #2563eb;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .status {
+            padding: 15px;
+            border-radius: 10px;
+            background: #f1f5f9;
+            margin-top: 20px;
+        }
+
+        .status strong {
+            font-size: 20px;
+        }
+
+        .error {
+            color: #b91c1c;
+            margin-top: 15px;
+        }
+
+        .success {
+            color: #166534;
+            margin-top: 15px;
+        }
+
+        .app-id {
+            font-family: monospace;
+            font-size: 18px;
+            font-weight: bold;
+            padding: 10px;
+            background: #f8fafc;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="card">
+        <h1>OmniLink</h1>
+
+        <div class="subtitle">
+            One application journey across government services.
+        </div>
+
+        <h2>Citizen Application</h2>
+
+        <label for="sourceSystem">
+            Service
+        </label>
+
+        <select id="sourceSystem">
+            <option value="ration_card">
+                Ration Card
+            </option>
+
+            <option value="municipal">
+                Municipal Permit
+            </option>
+
+            <option value="scholarship">
+                Scholarship
+            </option>
+        </select>
+
+        <label for="pan">
+            PAN Number
+        </label>
+
+        <input
+            id="pan"
+            type="text"
+            placeholder="Enter PAN number"
+        >
+
+        <label for="requestType">
+            Request Type
+        </label>
+
+        <input
+            id="requestType"
+            type="text"
+            value="ration_card"
+        >
+
+        <div class="consent-box">
+            <div class="consent-row">
+                <input
+                    id="consent"
+                    type="checkbox"
+                >
+
+                <label for="consent">
+                    I consent to OmniLink using my submitted
+                    information to process this application
+                    across the selected government service.
+                </label>
+            </div>
+        </div>
+
+        <button
+            id="submitButton"
+            onclick="submitApplication()"
+        >
+            Submit Application
+        </button>
+
+        <div id="submitMessage"></div>
+    </div>
+
+
+    <div class="card">
+
+        <h2>Track Application</h2>
+
+        <label for="trackId">
+            Unified Application ID
+        </label>
+
+        <input
+            id="trackId"
+            type="text"
+            placeholder="Example: OMNI-1234567890"
+        >
+
+        <button
+            onclick="trackApplication()"
+        >
+            Check Status
+        </button>
+
+        <div id="statusResult"></div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+const TRACKER_API = "http://localhost:5004";
+
+
+async function submitApplication() {
+
+    const sourceSystem =
+        document.getElementById("sourceSystem").value;
+
+    const pan =
+        document.getElementById("pan").value.trim();
+
+    const requestType =
+        document.getElementById("requestType").value.trim();
+
+    const consent =
+        document.getElementById("consent").checked;
+
+    const message =
+        document.getElementById("submitMessage");
+
+    message.innerHTML = "";
+
+    if (!pan) {
+        message.innerHTML =
+            '<div class="error">Please enter your PAN number.</div>';
+
+        return;
+    }
+
+    if (!consent) {
+        message.innerHTML =
+            '<div class="error">Please provide consent before submitting.</div>';
+
+        return;
+    }
+
+    const button =
+        document.getElementById("submitButton");
+
+    button.disabled = true;
+    button.innerText = "Submitting...";
+
+    try {
+
+        const response = await fetch(
+            `${TRACKER_API}/applications`,
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify({
+                    source_system: sourceSystem,
+                    pan_number: pan,
+                    request_type: requestType,
+                    consent: true
+                })
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(
+                data.error || "Application submission failed."
+            );
+        }
+
+        message.innerHTML = `
+            <div class="success">
+                Application submitted successfully.
+            </div>
+
+            <div class="app-id">
+                ${data.unified_app_id}
+            </div>
+        `;
+
+        document.getElementById("trackId").value =
+            data.unified_app_id;
+
+    } catch (error) {
+
+        message.innerHTML =
+            `<div class="error">${error.message}</div>`;
+
+    } finally {
+
+        button.disabled = false;
+        button.innerText = "Submit Application";
+    }
+}
+
+
+async function trackApplication() {
+
+    const appId =
+        document.getElementById("trackId")
+            .value
+            .trim();
+
+    const result =
+        document.getElementById("statusResult");
+
+    result.innerHTML = "";
+
+    if (!appId) {
+        result.innerHTML =
+            '<div class="error">Enter a Unified Application ID.</div>';
+
+        return;
+    }
+
+    try {
+
+        const response = await fetch(
+            `${TRACKER_API}/applications/${encodeURIComponent(appId)}`
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(
+                data.error || "Could not find application."
+            );
+        }
+
+        result.innerHTML = `
+            <div class="status">
+                <div>
+                    <strong>${data.status}</strong>
+                </div>
+
+                <p>
+                    Application:
+                    <b>${data.unified_app_id}</b>
+                </p>
+
+                <p>
+                    Workflow:
+                    ${data.process_definition}
+                </p>
+
+                <p>
+                    Process state:
+                    ${data.process_state}
+                </p>
+
+                <p>
+                    Started:
+                    ${data.started_at || "N/A"}
+                </p>
+
+                <p>
+                    Completed:
+                    ${data.completed_at || "Still in progress"}
+                </p>
+            </div>
+        `;
+
+    } catch (error) {
+
+        result.innerHTML =
+            `<div class="error">${error.message}</div>`;
+    }
+}
+
+</script>
+
+</body>
+</html>

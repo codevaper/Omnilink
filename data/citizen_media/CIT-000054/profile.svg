@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg"
+width="600" height="400" viewBox="0 0 600 400">
+<rect width="600" height="400" fill="#f4f6f8"/>
+<rect x="25" y="25" width="550" height="350"
+rx="18" fill="white" stroke="#c7cdd4"/>
+<circle cx="300" cy="145" r="75" fill="#d9dee5"/>
+<circle cx="300" cy="125" r="28" fill="#aeb6c0"/>
+<path d="M220 205 C240 170 360 170 380 205
+L410 285 L190 285 Z"
+fill="#c2c9d1"/>
+<text x="300" y="325"
+text-anchor="middle"
+font-family="Arial"
+font-size="22"
+font-weight="bold"
+fill="#27313c">Simran Das</text>
+<text x="300" y="350"
+text-anchor="middle"
+font-family="Arial"
+font-size="13"
+fill="#66717d">Synthetic profile image</text>
+<text x="300" y="48"
+text-anchor="middle"
+font-family="Arial"
+font-size="11"
+fill="#8b949e">CIT-000054</text>
+</svg>

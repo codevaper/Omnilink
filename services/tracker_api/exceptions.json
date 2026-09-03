@@ -1,0 +1,86 @@
+[
+  {
+    "exception_id": "EXC-OMNI-9764112DD8",
+    "unified_app_id": "OMNI-9764112DD8",
+    "applicant_name": "Priya Sharma",
+    "source_system": "scholarship",
+    "severity": "MEDIUM",
+    "reason": "Manual cross-system verification required",
+    "details": "Scholarship application is under review. Official verification is required before the application can be finalized.",
+    "status": "RESOLVED",
+    "created_at": "2026-09-03T11:09:33.773032+00:00",
+    "resolved_at": "2026-09-03T11:10:58.279025+00:00"
+  },
+  {
+    "exception_id": "EXC-OMNI-9DC83E1F82",
+    "unified_app_id": "OMNI-9DC83E1F82",
+    "applicant_name": "Priya Sharma",
+    "source_system": "scholarship",
+    "severity": "MEDIUM",
+    "reason": "Manual cross-system verification required",
+    "details": "Scholarship application is under review. Official verification is required before the application can be finalized.",
+    "status": "RESOLVED",
+    "created_at": "2026-09-03T11:22:38.845093+00:00",
+    "resolved_at": "2026-09-03T11:23:12.438497+00:00"
+  },
+  {
+    "exception_id": "EXC-SUB-ECAAB967929A",
+    "unified_app_id": "SUB-ECAAB967929A",
+    "applicant_name": "Nisha Raj Rao",
+    "source_system": "scholarship",
+    "severity": "MEDIUM",
+    "reason": "Manual cross-system verification required",
+    "details": "Scholarship application is under review. Official verification is required before the application can be finalized.",
+    "status": "OPEN",
+    "created_at": "2026-09-03T13:56:33.006407+00:00",
+    "resolved_at": null
+  },
+  {
+    "exception_id": "EXC-SUB-621FBB71094B",
+    "unified_app_id": "SUB-621FBB71094B",
+    "applicant_name": "Test Citizen Two",
+    "source_system": "scholarship",
+    "severity": "MEDIUM",
+    "reason": "Manual cross-system verification required",
+    "details": "Scholarship application is under review. Official verification is required before the application can be finalized.",
+    "status": "OPEN",
+    "created_at": "2026-09-03T13:56:33.006509+00:00",
+    "resolved_at": null
+  },
+  {
+    "exception_id": "EXC-SUB-E9B5C03D7603",
+    "unified_app_id": "SUB-E9B5C03D7603",
+    "applicant_name": "Demo Flow Three",
+    "source_system": "scholarship",
+    "severity": "MEDIUM",
+    "reason": "Manual cross-system verification required",
+    "details": "Scholarship application is under review. Official verification is required before the application can be finalized.",
+    "status": "OPEN",
+    "created_at": "2026-09-03T13:57:33.774716+00:00",
+    "resolved_at": null
+  },
+  {
+    "exception_id": "EXC-SUB-0CEB0CA39FDD",
+    "unified_app_id": "SUB-0CEB0CA39FDD",
+    "applicant_name": "Nisha Raj Rao",
+    "source_system": "scholarship",
+    "severity": "MEDIUM",
+    "reason": "Manual cross-system verification required",
+    "details": "Scholarship application is under review. Official verification is required before the application can be finalized.",
+    "status": "OPEN",
+    "created_at": "2026-09-03T14:02:33.311730+00:00",
+    "resolved_at": null
+  },
+  {
+    "exception_id": "EXC-SUB-712A3DE95E35",
+    "unified_app_id": "SUB-712A3DE95E35",
+    "applicant_name": "Nisha Raj Rao",
+    "source_system": "scholarship",
+    "severity": "MEDIUM",
+    "reason": "Manual cross-system verification required",
+    "details": "Scholarship application is under review. Official verification is required before the application can be finalized.",
+    "status": "OPEN",
+    "created_at": "2026-09-03T14:05:13.665593+00:00",
+    "resolved_at": null
+  }
+]

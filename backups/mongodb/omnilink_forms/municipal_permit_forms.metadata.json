@@ -1,0 +1,1 @@
+{"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_"},{"v":{"$numberInt":"2"},"key":{"citizen_ref":{"$numberInt":"1"}},"name":"citizen_ref_1"}],"uuid":"916aa3e9bdae4ae094497341160e4e47","collectionName":"municipal_permit_forms","type":"collection"}

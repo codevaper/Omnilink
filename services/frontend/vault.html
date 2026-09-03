@@ -1,0 +1,1761 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>OmniLink My Data Vault</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background:
+                radial-gradient(
+                    circle at top left,
+                    #dbeafe 0,
+                    transparent 30%
+                ),
+                radial-gradient(
+                    circle at bottom right,
+                    #dcfce7 0,
+                    transparent 28%
+                ),
+                #f4f7fb;
+            color: #172033;
+        }
+
+        .topbar {
+            background: #172033;
+            color: white;
+            padding: 18px 24px;
+        }
+
+        .topbar-inner {
+            width: min(1200px, 94%);
+            margin: auto;
+
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 18px;
+        }
+
+        .brand {
+            font-size: 22px;
+            font-weight: 800;
+        }
+
+        .nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .nav a {
+            color: white;
+            text-decoration: none;
+            padding: 9px 12px;
+            border-radius: 9px;
+            background: rgba(255, 255, 255, 0.1);
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .nav a:hover {
+            background: rgba(255, 255, 255, 0.18);
+        }
+
+        .container {
+            width: min(1200px, 94%);
+            margin: 30px auto 60px;
+        }
+
+        .hero {
+            background: white;
+            border-radius: 20px;
+            padding: 26px;
+            box-shadow:
+                0 10px 28px rgba(15, 23, 42, 0.08);
+            margin-bottom: 20px;
+        }
+
+        .hero h1 {
+            margin: 0 0 7px;
+            font-size: 30px;
+        }
+
+        .hero p {
+            margin: 0;
+            color: #64748b;
+        }
+
+        .hero-actions {
+            margin-top: 18px;
+
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        button,
+        .button-link {
+            border: 0;
+            border-radius: 10px;
+            padding: 11px 15px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .primary {
+            background: #2563eb;
+            color: white;
+        }
+
+        .secondary {
+            background: #475569;
+            color: white;
+        }
+
+        .danger {
+            background: #dc2626;
+            color: white;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 18px;
+            padding: 22px;
+            box-shadow:
+                0 8px 24px rgba(15, 23, 42, 0.07);
+            margin-bottom: 20px;
+        }
+
+        .card h2 {
+            margin-top: 0;
+            font-size: 20px;
+        }
+
+        .citizen-input {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .citizen-input input {
+            flex: 1;
+            min-width: 220px;
+
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            padding: 11px 13px;
+            font-size: 15px;
+        }
+
+        .profile-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .profile-box {
+            background: #f8fafc;
+            border-radius: 10px;
+            padding: 12px;
+        }
+
+        .label {
+            color: #64748b;
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        .value {
+            margin-top: 5px;
+            word-break: break-word;
+        }
+
+        .field {
+            padding: 12px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .field:last-child {
+            border-bottom: 0;
+        }
+
+        .field-name {
+            font-weight: 700;
+        }
+
+        .field-value {
+            margin-top: 4px;
+            font-family: Consolas, monospace;
+            font-size: 13px;
+            word-break: break-word;
+        }
+
+        .sensitive {
+            display: inline-block;
+            margin-left: 7px;
+            padding: 3px 6px;
+            border-radius: 999px;
+            background: #fef3c7;
+            color: #92400e;
+            font-size: 10px;
+            font-weight: 800;
+        }
+
+        .pill {
+            display: inline-block;
+            padding: 5px 9px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 800;
+        }
+
+        .approved {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .revoked {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .submitted {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .empty {
+            color: #64748b;
+            padding: 16px 0;
+        }
+
+        .status {
+            margin-top: 12px;
+            padding: 11px 13px;
+            border-radius: 10px;
+            display: none;
+        }
+
+        .status.success {
+            display: block;
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status.error {
+            display: block;
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .status.info {
+            display: block;
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .consent-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 12px;
+        }
+
+        .consent-header {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            align-items: flex-start;
+        }
+
+        .consent-title {
+            font-weight: 800;
+        }
+
+        .consent-meta {
+            margin-top: 6px;
+            color: #64748b;
+            font-size: 12px;
+        }
+
+        .consent-fields {
+            margin-top: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .field-chip {
+            background: #eff6ff;
+            color: #1d4ed8;
+            border-radius: 999px;
+            padding: 5px 8px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .source-card {
+            border-left: 4px solid #2563eb;
+            background: #f8fafc;
+            padding: 13px;
+            border-radius: 9px;
+            margin-bottom: 9px;
+        }
+
+        .source-title {
+            font-weight: 800;
+        }
+
+        .source-meta {
+            margin-top: 5px;
+            color: #64748b;
+            font-size: 12px;
+        }
+
+        .counter-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .counter {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 14px;
+            text-align: center;
+        }
+
+        .counter-number {
+            font-size: 25px;
+            font-weight: 800;
+        }
+
+        .counter-label {
+            color: #64748b;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .synthetic-note {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 12px;
+            color: #475569;
+            font-size: 12px;
+        }
+
+        @media (max-width: 850px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .profile-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .counter-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .topbar-inner {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="topbar">
+
+    <div class="topbar-inner">
+
+        <div class="brand">
+            OmniLink
+        </div>
+
+        <div class="nav">
+
+            <a href="index.html">
+                Citizen Portal
+            </a>
+
+            <a href="vault.html">
+                My Data Vault
+            </a>
+
+            <a href="consent.html">
+                Apply / Consent
+            </a>
+
+            <a href="dashboard.html">
+                Official Dashboard
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<div class="container">
+
+    <div class="hero">
+
+        <h1>
+            My Data Vault
+        </h1>
+
+        <p>
+            See what information OmniLink has available
+            for reuse and review your consent history.
+        </p>
+
+
+        <div class="hero-actions">
+
+            <a
+                class="button-link primary"
+                href="consent.html">
+                Apply for a Department Form
+            </a>
+
+            <a
+                class="button-link secondary"
+                href="dashboard.html">
+                Open Official Dashboard
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <div class="card">
+
+        <h2>
+            Citizen Lookup
+        </h2>
+
+        <div class="citizen-input">
+
+            <input
+                id="citizenId"
+                value="CIT-000001"
+                placeholder="Example: CIT-000001"
+            >
+
+            <button
+                class="primary"
+                onclick="loadVault()">
+
+                Load My Vault
+
+            </button>
+
+        </div>
+
+        <div
+            id="loadStatus"
+            class="status">
+        </div>
+
+    </div>
+
+
+    <div id="vaultContent">
+
+        <div class="empty">
+            Enter a Citizen ID and load the vault.
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+const VAULT_API =
+    "http://localhost:5006";
+
+const CONSENT_API =
+    "http://localhost:5007";
+
+const SUBMISSION_API =
+    "http://localhost:5009";
+
+
+const FIELD_GROUPS = {
+
+    personal: [
+        "first_name",
+        "middle_name",
+        "last_name",
+        "gender",
+        "date_of_birth",
+        "marital_status",
+        "category"
+    ],
+
+    contact: [
+        "mobile_number",
+        "alternate_mobile_number",
+        "email",
+        "emergency_contact_name",
+        "emergency_contact_phone"
+    ],
+
+    address: [
+        "address"
+    ],
+
+    identity: [
+        "aadhaar_number",
+        "pan_number",
+        "voter_id",
+        "driving_license_number",
+        "passport_number",
+        "ration_card_number"
+    ],
+
+    financial: [
+        "annual_income",
+        "family_size",
+        "bank_name",
+        "bank_account",
+        "bank_ifsc",
+        "branch_name"
+    ],
+
+    education: [
+        "education_level",
+        "occupation",
+        "employer_name",
+        "years_of_experience",
+        "skills"
+    ]
+};
+
+
+const FIELD_LABELS = {
+
+    first_name:
+        "First Name",
+
+    middle_name:
+        "Middle Name",
+
+    last_name:
+        "Last Name",
+
+    gender:
+        "Gender",
+
+    date_of_birth:
+        "Date of Birth",
+
+    marital_status:
+        "Marital Status",
+
+    category:
+        "Category",
+
+    mobile_number:
+        "Mobile Number",
+
+    alternate_mobile_number:
+        "Alternate Mobile Number",
+
+    email:
+        "Email Address",
+
+    emergency_contact_name:
+        "Emergency Contact Name",
+
+    emergency_contact_phone:
+        "Emergency Contact Phone",
+
+    address:
+        "Current Address",
+
+    aadhaar_number:
+        "Synthetic Aadhaar Reference",
+
+    pan_number:
+        "Synthetic PAN Reference",
+
+    voter_id:
+        "Synthetic Voter Reference",
+
+    driving_license_number:
+        "Synthetic Driving License Reference",
+
+    passport_number:
+        "Synthetic Passport Reference",
+
+    ration_card_number:
+        "Synthetic Ration Card Reference",
+
+    annual_income:
+        "Annual Income",
+
+    family_size:
+        "Family Size",
+
+    bank_name:
+        "Bank Name",
+
+    bank_account:
+        "Bank Account Reference",
+
+    bank_ifsc:
+        "Bank IFSC Reference",
+
+    branch_name:
+        "Bank Branch",
+
+    education_level:
+        "Education Level",
+
+    occupation:
+        "Occupation",
+
+    employer_name:
+        "Employer Name",
+
+    years_of_experience:
+        "Years of Experience",
+
+    skills:
+        "Skills"
+};
+
+
+const SENSITIVE_FIELDS = new Set([
+
+    "aadhaar_number",
+    "pan_number",
+    "voter_id",
+    "driving_license_number",
+    "passport_number",
+    "ration_card_number",
+    "annual_income",
+    "bank_account",
+    "bank_ifsc"
+
+]);
+
+
+let currentCitizenId = null;
+
+
+async function apiRequest(
+    url,
+    options = {}
+) {
+
+    const response =
+        await fetch(
+            url,
+            options
+        );
+
+    const text =
+        await response.text();
+
+    let data = {};
+
+    try {
+
+        data =
+            text
+                ? JSON.parse(text)
+                : {};
+
+    } catch {
+
+        data = {
+            raw: text
+        };
+    }
+
+    if (!response.ok) {
+
+        throw new Error(
+            data.error ||
+            data.message ||
+            `HTTP ${response.status}`
+        );
+    }
+
+    return data;
+}
+
+
+function showStatus(
+    message,
+    type
+) {
+
+    const element =
+        document.getElementById(
+            "loadStatus"
+        );
+
+    element.textContent =
+        message;
+
+    element.className =
+        `status ${type}`;
+}
+
+
+async function loadVault() {
+
+    const citizenId =
+        document.getElementById(
+            "citizenId"
+        ).value.trim();
+
+    if (!citizenId) {
+
+        showStatus(
+            "Citizen ID is required.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    currentCitizenId =
+        citizenId;
+
+
+    try {
+
+        showStatus(
+            "Loading your OmniLink vault...",
+            "info"
+        );
+
+
+        const [
+            profile,
+            consentHistory,
+            submissions
+        ] = await Promise.all([
+
+            apiRequest(
+                `${VAULT_API}/citizens/` +
+                encodeURIComponent(
+                    citizenId
+                )
+            ),
+
+            apiRequest(
+                `${CONSENT_API}/consent/citizen/` +
+                encodeURIComponent(
+                    citizenId
+                )
+            ),
+
+            apiRequest(
+                `${SUBMISSION_API}/submissions`
+            )
+
+        ]);
+
+
+        const citizenSubmissions =
+            (submissions.submissions || [])
+                .filter(
+                    item =>
+                        item.citizen_id ===
+                        citizenId
+                );
+
+
+        renderVault(
+            profile,
+            consentHistory,
+            citizenSubmissions
+        );
+
+
+        showStatus(
+            "Vault loaded successfully.",
+            "success"
+        );
+
+
+    } catch (error) {
+
+        document.getElementById(
+            "vaultContent"
+        ).innerHTML = "";
+
+        showStatus(
+            `Could not load vault: ${error.message}`,
+            "error"
+        );
+    }
+}
+
+
+function flattenProfile(
+    profile
+) {
+
+    const result = {};
+
+    const citizen =
+        profile.citizen || {};
+
+    const contact =
+        profile.contact || {};
+
+    const identity =
+        profile.identity || {};
+
+    const financial =
+        profile.financial || {};
+
+    const education =
+        profile.education_employment || {};
+
+
+    result.first_name =
+        citizen.first_name;
+
+    result.middle_name =
+        citizen.middle_name;
+
+    result.last_name =
+        citizen.last_name;
+
+    result.gender =
+        citizen.gender;
+
+    result.date_of_birth =
+        citizen.date_of_birth;
+
+    result.marital_status =
+        citizen.marital_status;
+
+    result.category =
+        citizen.category;
+
+
+    result.mobile_number =
+        contact.mobile_number;
+
+    result.alternate_mobile_number =
+        contact.alternate_mobile;
+
+    result.email =
+        contact.email;
+
+    result.emergency_contact_name =
+        contact.emergency_contact_name;
+
+    result.emergency_contact_phone =
+        contact.emergency_contact_phone;
+
+
+    result.address =
+        profile.address?.full_address;
+
+
+    result.aadhaar_number =
+        identity.synthetic_aadhaar_number;
+
+    result.pan_number =
+        identity.pan_number;
+
+    result.voter_id =
+        identity.voter_id;
+
+    result.driving_license_number =
+        identity.driving_license_number;
+
+    result.passport_number =
+        identity.passport_number;
+
+    result.ration_card_number =
+        identity.ration_card_number;
+
+
+    result.annual_income =
+        financial.annual_income;
+
+    result.family_size =
+        financial.family_size;
+
+    result.bank_name =
+        financial.bank_name;
+
+    result.bank_account =
+        financial.account_number;
+
+    result.bank_ifsc =
+        financial.ifsc_code;
+
+    result.branch_name =
+        financial.branch_name;
+
+
+    result.education_level =
+        education.education_level;
+
+    result.occupation =
+        education.occupation;
+
+    result.employer_name =
+        education.employer_name;
+
+    result.years_of_experience =
+        education.years_of_experience;
+
+    result.skills =
+        education.skills;
+
+
+    return result;
+}
+
+
+function formatValue(
+    value
+) {
+
+    if (
+        value === null ||
+        typeof value === "undefined" ||
+        value === ""
+    ) {
+
+        return "Not available";
+    }
+
+
+    if (
+        typeof value === "object"
+    ) {
+
+        return JSON.stringify(
+            value
+        );
+    }
+
+
+    if (
+        typeof value === "string" &&
+        value.includes("T") &&
+        value.length > 15
+    ) {
+
+        try {
+
+            return new Date(
+                value
+            ).toLocaleDateString();
+
+        } catch {
+            return value;
+        }
+    }
+
+
+    return String(value);
+}
+
+
+function renderFieldGroup(
+    title,
+    fields,
+    values
+) {
+
+    let html = `
+        <div class="card">
+
+            <h2>
+                ${escapeHtml(title)}
+            </h2>
+    `;
+
+
+    let found = false;
+
+
+    for (
+        const field
+        of fields
+    ) {
+
+        const value =
+            values[field];
+
+
+        if (
+            value === null ||
+            typeof value === "undefined"
+        ) {
+            continue;
+        }
+
+
+        found = true;
+
+
+        const sensitive =
+            SENSITIVE_FIELDS.has(
+                field
+            );
+
+
+        html += `
+
+            <div class="field">
+
+                <div class="field-name">
+
+                    ${escapeHtml(
+                        FIELD_LABELS[field] ||
+                        field
+                    )}
+
+                    ${
+                        sensitive
+                            ? `
+                                <span class="sensitive">
+                                    Sensitive
+                                </span>
+                              `
+                            : ""
+                    }
+
+                </div>
+
+
+                <div class="field-value">
+
+                    ${escapeHtml(
+                        formatValue(
+                            value
+                        )
+                    )}
+
+                </div>
+
+            </div>
+
+        `;
+    }
+
+
+    if (!found) {
+
+        html += `
+            <div class="empty">
+                No data available.
+            </div>
+        `;
+    }
+
+
+    html += `
+        </div>
+    `;
+
+
+    return html;
+}
+
+
+function renderConsents(
+    consentData
+) {
+
+    const consents =
+        consentData.consents || [];
+
+
+    if (!consents.length) {
+
+        return `
+            <div class="empty">
+                No consent history yet.
+            </div>
+        `;
+    }
+
+
+    let html = "";
+
+
+    for (
+        const consent
+        of consents
+    ) {
+
+        const status =
+            consent.status ||
+            "UNKNOWN";
+
+
+        const statusClass =
+
+            status === "APPROVED"
+                ? "approved"
+
+                :
+
+            status === "REVOKED"
+                ? "revoked"
+
+                :
+
+            "pending";
+
+
+        const approved =
+            consent.approved_fields || [];
+
+
+        html += `
+
+            <div class="consent-card">
+
+                <div class="consent-header">
+
+                    <div>
+
+                        <div class="consent-title">
+
+                            ${escapeHtml(
+                                consent.target_form
+                            )}
+
+                        </div>
+
+                        <div class="consent-meta">
+
+                            Consent #${escapeHtml(
+                                consent.consent_id
+                            )}
+
+                            <br>
+
+                            ${escapeHtml(
+                                consent.purpose || ""
+                            )}
+
+                        </div>
+
+                    </div>
+
+
+                    <span
+                        class="pill ${statusClass}"
+                    >
+                        ${escapeHtml(
+                            status
+                        )}
+                    </span>
+
+                </div>
+
+
+                <div class="consent-meta">
+
+                    Created:
+                    ${escapeHtml(
+                        formatDate(
+                            consent.created_at
+                        )
+                    )}
+
+                    ${
+                        consent.revoked_at
+                            ? `
+                                <br>
+                                Revoked:
+                                ${escapeHtml(
+                                    formatDate(
+                                        consent.revoked_at
+                                    )
+                                )}
+                              `
+                            : ""
+                    }
+
+                </div>
+
+
+                <div class="consent-fields">
+
+                    ${
+                        approved.length
+                            ? approved.map(
+                                field => `
+                                    <span class="field-chip">
+                                        ${escapeHtml(field)}
+                                    </span>
+                                `
+                              ).join("")
+                            : `
+                                <span class="small">
+                                    No approved fields
+                                </span>
+                              `
+                    }
+
+                </div>
+
+            </div>
+
+        `;
+    }
+
+
+    return html;
+}
+
+
+function renderSubmissions(
+    submissions
+) {
+
+    if (!submissions.length) {
+
+        return `
+            <div class="empty">
+                No submitted applications.
+            </div>
+        `;
+    }
+
+
+    let html = "";
+
+
+    for (
+        const submission
+        of submissions
+    ) {
+
+        html += `
+
+            <div class="source-card">
+
+                <div class="source-title">
+
+                    ${escapeHtml(
+                        submission.submission_id
+                    )}
+
+                </div>
+
+
+                <div class="source-meta">
+
+                    Form:
+                    ${escapeHtml(
+                        submission.target_form
+                    )}
+
+                    <br>
+
+                    Consent:
+                    #${escapeHtml(
+                        submission.consent_id
+                    )}
+
+                    <br>
+
+                    Submitted:
+                    ${escapeHtml(
+                        formatDate(
+                            submission.created_at
+                        )
+                    )}
+
+                </div>
+
+
+                <div style="margin-top:7px;">
+
+                    <span class="pill submitted">
+
+                        ${escapeHtml(
+                            submission.status
+                        )}
+
+                    </span>
+
+                </div>
+
+            </div>
+
+        `;
+    }
+
+
+    return html;
+}
+
+
+function renderSourceRecords(
+    records
+) {
+
+    if (!records || !records.length) {
+
+        return `
+            <div class="empty">
+                No linked departmental records found.
+            </div>
+        `;
+    }
+
+
+    let html = "";
+
+
+    for (
+        const record
+        of records
+    ) {
+
+        const formName =
+            record.form_type ||
+            record.form_name ||
+            record.target_form ||
+            "Department Form";
+
+
+        html += `
+
+            <div class="source-card">
+
+                <div class="source-title">
+
+                    ${escapeHtml(
+                        formName
+                    )}
+
+                </div>
+
+
+                <div class="source-meta">
+
+                    ${
+                        record.collection
+                            ? `
+                                Collection:
+                                ${escapeHtml(
+                                    record.collection
+                                )}
+                                <br>
+                              `
+                            : ""
+                    }
+
+                    ${
+                        record.record_id
+                            ? `
+                                Record:
+                                ${escapeHtml(
+                                    record.record_id
+                                )}
+                              `
+                            : ""
+                    }
+
+                </div>
+
+            </div>
+
+        `;
+    }
+
+
+    return html;
+}
+
+
+function renderVault(
+    profile,
+    consentData,
+    submissions
+) {
+
+    const values =
+        flattenProfile(
+            profile
+        );
+
+
+    const citizen =
+        profile.citizen || {};
+
+
+    const sourceRecords =
+        profile.source_records || [];
+
+
+    const approvedConsents =
+        (consentData.consents || [])
+            .filter(
+                item =>
+                    item.status === "APPROVED"
+            )
+            .length;
+
+
+    const revokedConsents =
+        (consentData.consents || [])
+            .filter(
+                item =>
+                    item.status === "REVOKED"
+            )
+            .length;
+
+
+    const totalShared =
+        (consentData.consents || [])
+            .reduce(
+                (
+                    total,
+                    item
+                ) =>
+                    total +
+                    (
+                        item.approved_fields
+                            ?.length || 0
+                    ),
+                0
+            );
+
+
+    document.getElementById(
+        "vaultContent"
+    ).innerHTML = `
+
+        <div class="card">
+
+            <h2>
+                Citizen Profile
+            </h2>
+
+
+            <div class="profile-grid">
+
+                <div class="profile-box">
+
+                    <div class="label">
+                        Citizen ID
+                    </div>
+
+                    <div class="value mono">
+                        ${escapeHtml(
+                            citizen.citizen_id ||
+                            currentCitizenId
+                        )}
+                    </div>
+
+                </div>
+
+
+                <div class="profile-box">
+
+                    <div class="label">
+                        Name
+                    </div>
+
+                    <div class="value">
+
+                        ${escapeHtml(
+                            [
+                                citizen.first_name,
+                                citizen.middle_name,
+                                citizen.last_name
+                            ]
+                            .filter(Boolean)
+                            .join(" ")
+                        )}
+
+                    </div>
+
+                </div>
+
+
+                <div class="profile-box">
+
+                    <div class="label">
+                        Data Source
+                    </div>
+
+                    <div class="value">
+                        OmniLink Citizen Vault
+                    </div>
+
+                </div>
+
+
+                <div class="profile-box">
+
+                    <div class="label">
+                        Data Type
+                    </div>
+
+                    <div class="value">
+                        Synthetic Prototype Data
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="card">
+
+            <h2>
+                Vault Overview
+            </h2>
+
+
+            <div class="counter-grid">
+
+                <div class="counter">
+
+                    <div class="counter-number">
+                        30
+                    </div>
+
+                    <div class="counter-label">
+                        Reusable Fields
+                    </div>
+
+                </div>
+
+
+                <div class="counter">
+
+                    <div class="counter-number">
+                        ${approvedConsents}
+                    </div>
+
+                    <div class="counter-label">
+                        Active Consents
+                    </div>
+
+                </div>
+
+
+                <div class="counter">
+
+                    <div class="counter-number">
+                        ${totalShared}
+                    </div>
+
+                    <div class="counter-label">
+                        Approved Shares
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="grid">
+
+            ${renderFieldGroup(
+                "Personal Information",
+                FIELD_GROUPS.personal,
+                values
+            )}
+
+            ${renderFieldGroup(
+                "Contact Information",
+                FIELD_GROUPS.contact,
+                values
+            )}
+
+            ${renderFieldGroup(
+                "Address",
+                FIELD_GROUPS.address,
+                values
+            )}
+
+            ${renderFieldGroup(
+                "Identity References",
+                FIELD_GROUPS.identity,
+                values
+            )}
+
+            ${renderFieldGroup(
+                "Financial Information",
+                FIELD_GROUPS.financial,
+                values
+            )}
+
+            ${renderFieldGroup(
+                "Education & Employment",
+                FIELD_GROUPS.education,
+                values
+            )}
+
+        </div>
+
+
+        <div class="card">
+
+            <h2>
+                Consent History
+            </h2>
+
+            ${renderConsents(
+                consentData
+            )}
+
+        </div>
+
+
+        <div class="grid">
+
+            <div class="card">
+
+                <h2>
+                    Department Records
+                </h2>
+
+                ${renderSourceRecords(
+                    sourceRecords
+                )}
+
+            </div>
+
+
+            <div class="card">
+
+                <h2>
+                    My Submitted Applications
+                </h2>
+
+                ${renderSubmissions(
+                    submissions
+                )}
+
+            </div>
+
+        </div>
+
+
+        <div class="synthetic-note">
+
+            <strong>
+                Prototype privacy note:
+            </strong>
+
+            This environment uses synthetic
+            demonstration data. Identity-like
+            values are not real citizen credentials.
+
+        </div>
+
+    `;
+}
+
+
+function formatDate(
+    value
+) {
+
+    if (!value) {
+        return "-";
+    }
+
+
+    try {
+
+        return new Date(
+            value
+        ).toLocaleString();
+
+    } catch {
+
+        return String(value);
+    }
+}
+
+
+function escapeHtml(
+    value
+) {
+
+    return String(value ?? "")
+        .replaceAll(
+            "&",
+            "&amp;"
+        )
+        .replaceAll(
+            "<",
+            "&lt;"
+        )
+        .replaceAll(
+            ">",
+            "&gt;"
+        )
+        .replaceAll(
+            '"',
+            "&quot;"
+        )
+        .replaceAll(
+            "'",
+            "&#039;"
+        );
+}
+
+
+loadVault();
+
+</script>
+
+</body>
+</html>

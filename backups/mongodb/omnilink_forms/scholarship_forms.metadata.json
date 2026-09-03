@@ -1,0 +1,1 @@
+{"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_"},{"v":{"$numberInt":"2"},"key":{"citizen_ref":{"$numberInt":"1"}},"name":"citizen_ref_1"}],"uuid":"9e25767a4f57483e88455294f1987e8a","collectionName":"scholarship_forms","type":"collection"}

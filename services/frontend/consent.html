@@ -1,0 +1,1894 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>OmniLink Citizen Portal</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background:
+                radial-gradient(
+                    circle at top left,
+                    #dbeafe 0,
+                    transparent 30%
+                ),
+                radial-gradient(
+                    circle at bottom right,
+                    #dcfce7 0,
+                    transparent 28%
+                ),
+                #f4f7fb;
+            color: #172033;
+        }
+
+        .topbar {
+            background: #172033;
+            color: white;
+            padding: 16px 24px;
+        }
+
+        .topbar-inner {
+            width: min(1200px, 94%);
+            margin: auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .brand {
+            font-size: 22px;
+            font-weight: 800;
+        }
+
+        .nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .nav a {
+            color: white;
+            text-decoration: none;
+            padding: 8px 11px;
+            border-radius: 9px;
+            background: rgba(255, 255, 255, 0.1);
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .nav a:hover {
+            background: rgba(255, 255, 255, 0.18);
+        }
+
+        .container {
+            width: min(1200px, 94%);
+            margin: 30px auto 50px;
+        }
+
+        .header {
+            background: white;
+            border-radius: 20px;
+            padding: 28px 30px;
+            margin-bottom: 22px;
+            box-shadow:
+                0 10px 28px rgba(15, 23, 42, 0.08);
+        }
+
+        .header h1 {
+            margin: 0 0 8px;
+            font-size: 30px;
+        }
+
+        .header p {
+            margin: 0;
+            color: #64748b;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1.15fr;
+            gap: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 18px;
+            padding: 24px;
+            box-shadow:
+                0 10px 28px rgba(15, 23, 42, 0.08);
+            margin-bottom: 20px;
+        }
+
+        .card h2 {
+            margin-top: 0;
+            font-size: 20px;
+        }
+
+        label {
+            display: block;
+            margin: 14px 0 6px;
+            font-weight: 700;
+        }
+
+        input,
+        select {
+            width: 100%;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            padding: 12px 14px;
+            font-size: 15px;
+            outline: none;
+        }
+
+        input:focus,
+        select:focus {
+            border-color: #2563eb;
+            box-shadow:
+                0 0 0 3px rgba(37, 99, 235, 0.12);
+        }
+
+        button {
+            border: 0;
+            border-radius: 10px;
+            padding: 12px 18px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 16px;
+        }
+
+        .primary {
+            background: #2563eb;
+            color: white;
+        }
+
+        .secondary {
+            background: #0f766e;
+            color: white;
+        }
+
+        button:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+        }
+
+        .fields {
+            margin-top: 16px;
+        }
+
+        .field-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 15px 12px;
+            border-bottom: 1px solid #e2e8f0;
+            border-radius: 10px;
+        }
+
+        .field-row.required {
+            background: #f8fbff;
+        }
+
+        .field-row.readonly {
+            background: #f8fafc;
+            opacity: 0.78;
+        }
+
+        .field-row input[type="checkbox"] {
+            width: auto;
+            margin-top: 5px;
+        }
+
+        .field-row input[type="checkbox"]:disabled {
+            cursor: not-allowed;
+        }
+
+        .field-name {
+            font-weight: 700;
+        }
+
+        .field-label {
+            color: #64748b;
+            font-size: 13px;
+            margin-top: 3px;
+        }
+
+        .field-example {
+            color: #475569;
+            font-size: 12px;
+            margin-top: 5px;
+            font-family: Consolas, monospace;
+        }
+
+        .required-badge {
+            display: inline-block;
+            margin-left: 8px;
+            padding: 3px 7px;
+            border-radius: 999px;
+            background: #dcfce7;
+            color: #166534;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .readonly-badge {
+            display: inline-block;
+            margin-left: 8px;
+            padding: 3px 7px;
+            border-radius: 999px;
+            background: #e2e8f0;
+            color: #475569;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .sensitive-badge {
+            display: inline-block;
+            margin-left: 8px;
+            padding: 3px 7px;
+            border-radius: 999px;
+            background: #fef3c7;
+            color: #92400e;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .minimization-note {
+            margin-top: 15px;
+            padding: 14px;
+            border-radius: 12px;
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            color: #1e3a8a;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .legend-item {
+            padding: 8px 10px;
+            border-radius: 9px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .legend-required {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .legend-readonly {
+            background: #e2e8f0;
+            color: #475569;
+        }
+
+        .status {
+            margin-top: 14px;
+            padding: 12px 14px;
+            border-radius: 10px;
+            display: none;
+            white-space: pre-wrap;
+        }
+
+        .status.success {
+            display: block;
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status.error {
+            display: block;
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .status.info {
+            display: block;
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .summary {
+            margin-top: 16px;
+            padding: 16px;
+            border-radius: 12px;
+            background: #eff6ff;
+            display: none;
+        }
+
+        .form-data {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .form-field {
+            margin-bottom: 15px;
+        }
+
+        .form-field label {
+            margin-top: 0;
+        }
+
+        .form-field small {
+            display: block;
+            margin-top: 4px;
+            color: #64748b;
+            font-size: 12px;
+        }
+
+        .form-example {
+            color: #2563eb;
+            font-family: Consolas, monospace;
+        }
+
+        .submission-card {
+            display: none;
+            margin-top: 20px;
+            padding: 18px;
+            border-radius: 14px;
+            background: #ecfdf5;
+            border: 1px solid #a7f3d0;
+        }
+
+        .submission-id {
+            font-family: Consolas, monospace;
+            font-size: 18px;
+            font-weight: 700;
+            margin-top: 8px;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        .mapping-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 14px;
+        }
+
+        .mapping-table th,
+        .mapping-table td {
+            text-align: left;
+            padding: 9px 8px;
+            border-bottom: 1px solid #e2e8f0;
+            vertical-align: top;
+        }
+
+        .mapping-table th {
+            background: #f8fafc;
+        }
+
+        .mono {
+            font-family: Consolas, monospace;
+            word-break: break-word;
+        }
+
+        .small {
+            font-size: 13px;
+            color: #64748b;
+        }
+
+        .pill {
+            display: inline-block;
+            padding: 5px 9px;
+            border-radius: 999px;
+            background: #e2e8f0;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        @media (max-width: 900px) {
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .topbar-inner {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+        }
+
+    </style>
+</head>
+
+<body>
+
+<div class="topbar">
+
+    <div class="topbar-inner">
+
+        <div class="brand">
+            OmniLink
+        </div>
+
+        <div class="nav">
+
+            <a href="index.html">
+                Citizen Portal
+            </a>
+
+            <a href="vault.html">
+                My Data Vault
+            </a>
+
+            <a href="consent.html">
+                Apply / Consent
+            </a>
+
+            <a href="dashboard.html">
+                Official Dashboard
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<div class="container">
+
+    <div class="header">
+
+        <h1>
+            OmniLink Citizen Portal
+        </h1>
+
+        <p>
+            Review exactly what this application needs.
+            Required fields can be approved. Other visible
+            information is locked and cannot be approved.
+        </p>
+
+    </div>
+
+
+    <div class="grid">
+
+        <div>
+
+            <div class="card">
+
+                <h2>
+                    1. Select Application
+                </h2>
+
+                <label for="citizenId">
+                    Citizen ID
+                </label>
+
+                <input
+                    id="citizenId"
+                    type="text"
+                    value="CIT-000001"
+                    placeholder="Example: CIT-000001"
+                >
+
+                <div class="small">
+                    Example:
+                    <span class="mono">
+                        CIT-000001
+                    </span>
+                </div>
+
+
+                <label for="targetForm">
+                    Department Form
+                </label>
+
+                <select
+                    id="targetForm"
+                    onchange="resetApplication()">
+
+                    <option value="">
+                        Select a form
+                    </option>
+
+                </select>
+
+
+                <div
+                    id="formRequirementNote"
+                    class="minimization-note"
+                    style="display:none;">
+                </div>
+
+
+                <label for="purpose">
+                    Purpose
+                </label>
+
+                <input
+                    id="purpose"
+                    type="text"
+                    value="Citizen application prefill"
+                    placeholder="Example: Scholarship application"
+                >
+
+
+                <button
+                    class="primary"
+                    onclick="loadFields()"
+                >
+                    Load Application Fields
+                </button>
+
+
+                <div
+                    id="loadStatus"
+                    class="status">
+                </div>
+
+
+                <div class="legend">
+
+                    <div class="legend-item legend-required">
+                        ✓ Required
+                        <br>
+                        Can select
+                    </div>
+
+                    <div class="legend-item legend-readonly">
+                        🔒 Not Required
+                        <br>
+                        Read-only
+                    </div>
+
+                </div>
+
+
+                <div
+                    id="fieldsContainer"
+                    class="fields">
+                </div>
+
+
+                <button
+                    id="approveButton"
+                    class="secondary"
+                    onclick="approveSelectedFields()"
+                    disabled
+                >
+                    Approve Selected Required Fields
+                </button>
+
+
+                <div
+                    id="consentStatus"
+                    class="status">
+                </div>
+
+
+                <div
+                    id="consentSummary"
+                    class="summary">
+                </div>
+
+
+                <div class="minimization-note">
+
+                    <strong>
+                        Citizen control:
+                    </strong>
+
+                    OmniLink shows the citizen which
+                    information exists, but only fields
+                    required by the selected application
+                    can be approved.
+
+                    <br><br>
+
+                    Unrelated fields are locked and cannot
+                    be selected.
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div>
+
+            <div class="card">
+
+                <h2>
+                    2. Review Prefilled Form
+                </h2>
+
+                <p class="small">
+                    Review every approved value before
+                    submitting. Approved values remain
+                    editable here.
+                </p>
+
+
+                <button
+                    id="prefillButton"
+                    class="primary"
+                    onclick="generatePrefill()"
+                    disabled
+                >
+                    Generate Prefill
+                </button>
+
+
+                <div
+                    id="prefillStatus"
+                    class="status">
+                </div>
+
+
+                <div
+                    id="formDataContainer"
+                    class="form-data">
+                </div>
+
+
+                <button
+                    id="submitButton"
+                    class="secondary"
+                    onclick="submitApplication()"
+                    disabled
+                >
+                    Submit Application
+                </button>
+
+
+                <div
+                    id="submissionStatus"
+                    class="status">
+                </div>
+
+
+                <div
+                    id="submissionCard"
+                    class="submission-card">
+                </div>
+
+            </div>
+
+
+            <div class="card">
+
+                <h2>
+                    3. Field Mapping
+                </h2>
+
+                <div
+                    id="mappingResult"
+                    class="table-wrap">
+
+                    <p class="small">
+                        Mapping information appears
+                        after prefill.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+const CONSENT_API =
+    "http://localhost:5007";
+
+const PREFILL_API =
+    "http://localhost:5008";
+
+const SUBMISSION_API =
+    "http://localhost:5009";
+
+
+let reusableFields = [];
+
+let currentConsentId = null;
+
+let currentPrefill = {};
+
+
+const FIELD_EXAMPLES = {
+
+    first_name: "Example: Nisha",
+    middle_name: "Example: Raj",
+    last_name: "Example: Rao",
+    date_of_birth: "Example: 17-12-1980",
+    father_name: "Example: Rajesh Rao",
+    gender: "Example: Female",
+    marital_status: "Example: Single",
+    category: "Example: General",
+
+    mobile_number:
+        "Example: 9876543210",
+
+    alternate_mobile_number:
+        "Example: 9123456780",
+
+    email:
+        "Example: nisha.rao@example.com",
+
+    address:
+        "Example: 517, Lake View Road, Green Park, Mumbai",
+
+    aadhaar_number:
+        "Example: 482917365104",
+
+    pan_number:
+        "Example: ABCDE1234F",
+
+    voter_id:
+        "Example: ABC1234567",
+
+    driving_license_number:
+        "Example: MH12 20260123456",
+
+    passport_number:
+        "Example: P1234567",
+
+    ration_card_number:
+        "Example: MH-01-1234567890",
+
+    annual_income:
+        "Example: 250000",
+
+    family_size:
+        "Example: 4",
+
+    bank_name:
+        "Example: State Bank of India",
+
+    bank_account:
+        "Example: 123456789012",
+
+    bank_ifsc:
+        "Example: SBIN0001234",
+
+    branch_name:
+        "Example: Mumbai Main Branch",
+
+    education_level:
+        "Example: Bachelor's Degree",
+
+    occupation:
+        "Example: Software Engineer",
+
+    employer_name:
+        "Example: Omni Technologies",
+
+    years_of_experience:
+        "Example: 5",
+
+    skills:
+        "Example: Java, Python, Data Analysis"
+};
+
+
+const TARGET_FIELD_EXAMPLES = {
+
+    student_first:
+        "Example: Nisha",
+
+    student_middle:
+        "Example: Raj",
+
+    student_last:
+        "Example: Rao",
+
+    birth_date:
+        "Example: 17-12-1980",
+
+    student_gender:
+        "Example: Female",
+
+    contact_mobile:
+        "Example: 9876543210",
+
+    contact_email:
+        "Example: nisha.rao@example.com",
+
+    home_address:
+        "Example: 517, Lake View Road, Green Park, Mumbai",
+
+    pan_id:
+        "Example: ABCDE1234F",
+
+    annual_income:
+        "Example: 250000",
+
+    student_category:
+        "Example: General",
+
+    bank_acc:
+        "Example: 123456789012",
+
+    bank_ifsc:
+        "Example: SBIN0001234",
+
+    guardian_name:
+        "Example: Rajesh Rao",
+
+    education:
+        "Example: Bachelor's Degree"
+};
+
+
+async function apiRequest(
+    url,
+    options = {}
+) {
+
+    const response =
+        await fetch(
+            url,
+            options
+        );
+
+    let data;
+
+    try {
+
+        data =
+            await response.json();
+
+    } catch {
+
+        throw new Error(
+            `Server returned HTTP ${response.status}`
+        );
+    }
+
+    if (!response.ok) {
+
+        throw new Error(
+            data.error ||
+            `Request failed with HTTP ${response.status}`
+        );
+    }
+
+    return data;
+}
+
+
+function showStatus(
+    elementId,
+    message,
+    type
+) {
+
+    const element =
+        document.getElementById(
+            elementId
+        );
+
+    element.textContent =
+        message;
+
+    element.className =
+        `status ${type}`;
+}
+
+
+function clearStatus(
+    elementId
+) {
+
+    const element =
+        document.getElementById(
+            elementId
+        );
+
+    element.textContent =
+        "";
+
+    element.className =
+        "status";
+}
+
+
+async function loadForms() {
+
+    try {
+
+        const data =
+            await apiRequest(
+                `${CONSENT_API}/consent/forms`
+            );
+
+        const select =
+            document.getElementById(
+                "targetForm"
+            );
+
+        for (
+            const form
+            of data.forms
+        ) {
+
+            const option =
+                document.createElement(
+                    "option"
+                );
+
+            option.value =
+                form.form_key;
+
+            option.textContent =
+                form.label;
+
+            select.appendChild(
+                option
+            );
+        }
+
+        select.value =
+            "scholarship";
+
+        updateRequirementNote();
+
+    } catch (error) {
+
+        showStatus(
+            "loadStatus",
+            `Could not load forms: ${error.message}`,
+            "error"
+        );
+    }
+}
+
+
+function resetApplication() {
+
+    currentConsentId =
+        null;
+
+    currentPrefill =
+        {};
+
+    reusableFields =
+        [];
+
+    document.getElementById(
+        "fieldsContainer"
+    ).innerHTML = "";
+
+    document.getElementById(
+        "formDataContainer"
+    ).innerHTML = "";
+
+    document.getElementById(
+        "mappingResult"
+    ).innerHTML =
+        `<p class="small">
+            Mapping information appears after prefill.
+        </p>`;
+
+    document.getElementById(
+        "approveButton"
+    ).disabled =
+        true;
+
+    document.getElementById(
+        "prefillButton"
+    ).disabled =
+        true;
+
+    document.getElementById(
+        "submitButton"
+    ).disabled =
+        true;
+
+    document.getElementById(
+        "formDataContainer"
+    ).style.display =
+        "none";
+
+    document.getElementById(
+        "submissionCard"
+    ).style.display =
+        "none";
+
+    document.getElementById(
+        "consentSummary"
+    ).style.display =
+        "none";
+
+    clearStatus("loadStatus");
+    clearStatus("consentStatus");
+    clearStatus("prefillStatus");
+    clearStatus("submissionStatus");
+
+    updateRequirementNote();
+}
+
+
+function updateRequirementNote() {
+
+    const targetForm =
+        document.getElementById(
+            "targetForm"
+        ).value;
+
+    const note =
+        document.getElementById(
+            "formRequirementNote"
+        );
+
+    if (!targetForm) {
+
+        note.style.display =
+            "none";
+
+        return;
+    }
+
+    note.style.display =
+        "block";
+
+    const label =
+        document.getElementById(
+            "targetForm"
+        ).selectedOptions[0]
+            ?.textContent
+        ||
+        targetForm;
+
+    note.innerHTML = `
+
+        <strong>
+            ${escapeHtml(label)}
+        </strong>
+
+        shows the information relevant to this
+        application.
+
+        <br><br>
+
+        <strong>
+            Green fields
+        </strong>
+        are required and can be selected.
+
+        <br>
+
+        <strong>
+            Grey fields
+        </strong>
+        are not required and are locked.
+
+    `;
+}
+
+
+async function loadFields() {
+
+    const citizenId =
+        document.getElementById(
+            "citizenId"
+        ).value.trim();
+
+    const targetForm =
+        document.getElementById(
+            "targetForm"
+        ).value;
+
+    if (!citizenId) {
+
+        showStatus(
+            "loadStatus",
+            "Citizen ID is required.",
+            "error"
+        );
+
+        return;
+    }
+
+    if (!targetForm) {
+
+        showStatus(
+            "loadStatus",
+            "Please select a department form.",
+            "error"
+        );
+
+        return;
+    }
+
+    resetApplication();
+
+    try {
+
+        const data =
+            await apiRequest(
+                `${CONSENT_API}/consent/fields/` +
+                `${encodeURIComponent(citizenId)}` +
+                `?target_form=` +
+                `${encodeURIComponent(targetForm)}`
+            );
+
+        reusableFields =
+            data.fields || [];
+
+        renderFields();
+
+        const requiredCount =
+            reusableFields.filter(
+                field =>
+                    field.required_for_form
+            ).length;
+
+        document.getElementById(
+            "approveButton"
+        ).disabled =
+            requiredCount === 0;
+
+        showStatus(
+            "loadStatus",
+            `${requiredCount} required fields can be approved. ` +
+            `${reusableFields.length - requiredCount} ` +
+            `other visible fields are read-only.`,
+            "success"
+        );
+
+    } catch (error) {
+
+        showStatus(
+            "loadStatus",
+            `Could not load form fields: ${error.message}`,
+            "error"
+        );
+    }
+}
+
+
+function renderFields() {
+
+    const container =
+        document.getElementById(
+            "fieldsContainer"
+        );
+
+    container.innerHTML = "";
+
+    if (!reusableFields.length) {
+
+        container.innerHTML =
+            `<p class="small">
+                No fields are available.
+            </p>`;
+
+        return;
+    }
+
+    for (
+        const field
+        of reusableFields
+    ) {
+
+        const row =
+            document.createElement(
+                "div"
+            );
+
+        const required =
+            field.required_for_form;
+
+        row.className =
+            required
+                ? "field-row required"
+                : "field-row readonly";
+
+        const statusBadge =
+            required
+                ? `
+                    <span class="required-badge">
+                        REQUIRED
+                    </span>
+                  `
+                : `
+                    <span class="readonly-badge">
+                        NOT REQUIRED • READ ONLY
+                    </span>
+                  `;
+
+        const sensitiveBadge =
+            field.sensitive
+                ? `
+                    <span class="sensitive-badge">
+                        Sensitive
+                    </span>
+                  `
+                : "";
+
+        const example =
+            FIELD_EXAMPLES[field.name]
+            ||
+            "Example: Prototype value";
+
+        row.innerHTML = `
+
+            <input
+                type="checkbox"
+                class="field-checkbox"
+                value="${escapeHtml(
+                    field.name
+                )}"
+                ${required ? "" : "disabled"}
+            >
+
+            <div>
+
+                <div class="field-name">
+
+                    ${escapeHtml(
+                        field.name
+                    )}
+
+                    ${statusBadge}
+
+                    ${sensitiveBadge}
+
+                </div>
+
+                <div class="field-label">
+
+                    ${escapeHtml(
+                        field.label || ""
+                    )}
+
+                </div>
+
+                <div class="field-example">
+
+                    ${escapeHtml(
+                        example
+                    )}
+
+                </div>
+
+            </div>
+
+        `;
+
+        container.appendChild(
+            row
+        );
+    }
+}
+
+
+async function approveSelectedFields() {
+
+    const citizenId =
+        document.getElementById(
+            "citizenId"
+        ).value.trim();
+
+    const targetForm =
+        document.getElementById(
+            "targetForm"
+        ).value;
+
+    const purpose =
+        document.getElementById(
+            "purpose"
+        ).value.trim();
+
+    const selected =
+        Array.from(
+            document.querySelectorAll(
+                ".field-checkbox:checked"
+            )
+        ).map(
+            input =>
+                input.value
+        );
+
+    if (!selected.length) {
+
+        showStatus(
+            "consentStatus",
+            "Select at least one required field.",
+            "error"
+        );
+
+        return;
+    }
+
+    if (!purpose) {
+
+        showStatus(
+            "consentStatus",
+            "Purpose is required.",
+            "error"
+        );
+
+        return;
+    }
+
+    document.getElementById(
+        "approveButton"
+    ).disabled =
+        true;
+
+    try {
+
+        const requested =
+            await apiRequest(
+                `${CONSENT_API}/consent/request`,
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+
+                        citizen_id:
+                            citizenId,
+
+                        target_form:
+                            targetForm,
+
+                        requested_fields:
+                            selected,
+
+                        purpose:
+                            purpose
+                    })
+                }
+            );
+
+        currentConsentId =
+            requested.consent_id;
+
+        const approved =
+            await apiRequest(
+                `${CONSENT_API}/consent/` +
+                `${currentConsentId}/approve`,
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+
+                        approved_fields:
+                            selected
+                    })
+                }
+            );
+
+        showStatus(
+            "consentStatus",
+            `Consent #${approved.consent_id} approved for ${selected.length} required field(s).`,
+            "success"
+        );
+
+        const summary =
+            document.getElementById(
+                "consentSummary"
+            );
+
+        summary.style.display =
+            "block";
+
+        summary.innerHTML = `
+
+            <strong>
+                Consent approved
+            </strong>
+
+            <div
+                class="small"
+                style="margin-top:8px;"
+            >
+
+                Citizen:
+                ${escapeHtml(
+                    citizenId
+                )}
+
+                <br>
+
+                Form:
+                ${escapeHtml(
+                    approved.target_form_label
+                )}
+
+                <br>
+
+                Consent ID:
+                ${approved.consent_id}
+
+                <br>
+
+                Approved required fields:
+                ${selected.length}
+
+                <br>
+
+                Non-required fields:
+                Locked and excluded
+
+            </div>
+
+        `;
+
+        document.getElementById(
+            "prefillButton"
+        ).disabled =
+            false;
+
+    } catch (error) {
+
+        showStatus(
+            "consentStatus",
+            `Consent failed: ${error.message}`,
+            "error"
+        );
+
+        document.getElementById(
+            "approveButton"
+        ).disabled =
+            false;
+    }
+}
+
+
+async function generatePrefill() {
+
+    const citizenId =
+        document.getElementById(
+            "citizenId"
+        ).value.trim();
+
+    const targetForm =
+        document.getElementById(
+            "targetForm"
+        ).value;
+
+    if (!currentConsentId) {
+
+        showStatus(
+            "prefillStatus",
+            "Approve consent before generating prefill.",
+            "error"
+        );
+
+        return;
+    }
+
+    try {
+
+        const data =
+            await apiRequest(
+                `${PREFILL_API}/prefill`,
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+
+                        citizen_id:
+                            citizenId,
+
+                        target_form:
+                            targetForm
+                    })
+                }
+            );
+
+        currentPrefill =
+            data.prefill || {};
+
+        renderEditableForm(data);
+
+        renderMapping(data);
+
+        showStatus(
+            "prefillStatus",
+            `Prefill generated using consent #${data.consent_id}.`,
+            "success"
+        );
+
+    } catch (error) {
+
+        showStatus(
+            "prefillStatus",
+            `Prefill failed: ${error.message}`,
+            "error"
+        );
+    }
+}
+
+
+function renderEditableForm(data) {
+
+    const container =
+        document.getElementById(
+            "formDataContainer"
+        );
+
+    container.innerHTML = "";
+
+    const entries =
+        Object.entries(
+            data.prefill || {}
+        );
+
+    if (!entries.length) {
+
+        container.innerHTML =
+            `<p class="small">
+                No fields are available for prefill.
+            </p>`;
+
+        container.style.display =
+            "block";
+
+        return;
+    }
+
+    for (
+        const [field, value]
+        of entries
+    ) {
+
+        const wrapper =
+            document.createElement(
+                "div"
+            );
+
+        wrapper.className =
+            "form-field";
+
+        const example =
+            TARGET_FIELD_EXAMPLES[field]
+            ||
+            "Example: Prototype value";
+
+        wrapper.innerHTML = `
+
+            <label>
+                ${escapeHtml(field)}
+            </label>
+
+            <input
+                type="text"
+                class="prefill-input"
+                data-field="${escapeHtml(field)}"
+                value="${escapeHtml(
+                    String(value ?? "")
+                )}"
+            >
+
+            <small>
+
+                Approved reusable value.
+                You may edit it before submission.
+
+                <br>
+
+                <span class="form-example">
+                    ${escapeHtml(example)}
+                </span>
+
+            </small>
+
+        `;
+
+        container.appendChild(
+            wrapper
+        );
+    }
+
+    container.style.display =
+        "block";
+
+    document.getElementById(
+        "submitButton"
+    ).disabled =
+        false;
+}
+
+
+function renderMapping(data) {
+
+    const container =
+        document.getElementById(
+            "mappingResult"
+        );
+
+    const mappings =
+        data.mapped_fields || [];
+
+    if (!mappings.length) {
+
+        container.innerHTML =
+            `<p class="small">
+                No field mappings were generated.
+            </p>`;
+
+        return;
+    }
+
+    let html = `
+
+        <table class="mapping-table">
+
+            <thead>
+
+                <tr>
+
+                    <th>
+                        Canonical Field
+                    </th>
+
+                    <th>
+                        Department Field
+                    </th>
+
+                    <th>
+                        Example
+                    </th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+    `;
+
+    for (
+        const mapping
+        of mappings
+    ) {
+
+        const example =
+            TARGET_FIELD_EXAMPLES[
+                mapping.target_field
+            ]
+            ||
+            "Prototype value";
+
+        html += `
+
+            <tr>
+
+                <td class="mono">
+                    ${escapeHtml(
+                        mapping.canonical_field
+                    )}
+                </td>
+
+                <td class="mono">
+                    ${escapeHtml(
+                        mapping.target_field
+                    )}
+                </td>
+
+                <td class="mono">
+                    ${escapeHtml(
+                        example
+                    )}
+                </td>
+
+            </tr>
+        `;
+    }
+
+    html += `
+
+            </tbody>
+
+        </table>
+    `;
+
+    container.innerHTML =
+        html;
+}
+
+
+async function submitApplication() {
+
+    const citizenId =
+        document.getElementById(
+            "citizenId"
+        ).value.trim();
+
+    const targetForm =
+        document.getElementById(
+            "targetForm"
+        ).value;
+
+    const inputs =
+        document.querySelectorAll(
+            ".prefill-input"
+        );
+
+    const formData = {};
+
+    for (
+        const input
+        of inputs
+    ) {
+
+        formData[
+            input.dataset.field
+        ] =
+            input.value;
+    }
+
+    if (!Object.keys(formData).length) {
+
+        showStatus(
+            "submissionStatus",
+            "There is no form data to submit.",
+            "error"
+        );
+
+        return;
+    }
+
+    if (!currentConsentId) {
+
+        showStatus(
+            "submissionStatus",
+            "No approved consent is available.",
+            "error"
+        );
+
+        return;
+    }
+
+    document.getElementById(
+        "submitButton"
+    ).disabled =
+        true;
+
+    try {
+
+        const result =
+            await apiRequest(
+                `${SUBMISSION_API}/submissions`,
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+
+                        citizen_id:
+                            citizenId,
+
+                        target_form:
+                            targetForm,
+
+                        consent_id:
+                            currentConsentId,
+
+                        form_data:
+                            formData
+                    })
+                }
+            );
+
+        showStatus(
+            "submissionStatus",
+            "Application submitted successfully.",
+            "success"
+        );
+
+        const card =
+            document.getElementById(
+                "submissionCard"
+            );
+
+        card.style.display =
+            "block";
+
+        card.innerHTML = `
+
+            <strong>
+                Application Submitted
+            </strong>
+
+            <div class="submission-id">
+                ${escapeHtml(
+                    result.submission_id
+                )}
+            </div>
+
+            <div
+                class="small"
+                style="margin-top:8px;"
+            >
+
+                Form:
+                ${escapeHtml(
+                    result.target_form
+                )}
+
+                <br>
+
+                Status:
+
+                <span class="pill">
+                    ${escapeHtml(
+                        result.status
+                    )}
+                </span>
+
+            </div>
+        `;
+
+    } catch (error) {
+
+        showStatus(
+            "submissionStatus",
+            `Submission failed: ${error.message}`,
+            "error"
+        );
+
+        document.getElementById(
+            "submitButton"
+        ).disabled =
+            false;
+    }
+}
+
+
+function escapeHtml(value) {
+
+    return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+}
+
+
+loadForms();
+
+</script>
+
+</body>
+</html>

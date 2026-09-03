@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions
+    xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+    xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    id="Definitions_OmniLink"
+    targetNamespace="http://omnilink.local/bpmn">
+
+ <bpmn:process id="citizen_application_review"
+              name="Citizen Application Review"
+              isExecutable="true"
+              camunda:historyTimeToLive="30">
+
+    <bpmn:startEvent
+        id="StartEvent_1"
+        name="Application Submitted">
+      <bpmn:outgoing>Flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:userTask
+        id="Task_OfficerReview"
+        name="Officer Review"
+        camunda:candidateGroups="officials">
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_2</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:exclusiveGateway
+        id="Gateway_Decision"
+        name="Approved?">
+      <bpmn:incoming>Flow_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_Approved</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Rejected</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:endEvent
+        id="EndEvent_Approved"
+        name="Approved">
+      <bpmn:incoming>Flow_Approved</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:endEvent
+        id="EndEvent_Rejected"
+        name="Rejected">
+      <bpmn:incoming>Flow_Rejected</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow
+        id="Flow_1"
+        sourceRef="StartEvent_1"
+        targetRef="Task_OfficerReview"/>
+
+    <bpmn:sequenceFlow
+        id="Flow_2"
+        sourceRef="Task_OfficerReview"
+        targetRef="Gateway_Decision"/>
+
+    <bpmn:sequenceFlow
+        id="Flow_Approved"
+        sourceRef="Gateway_Decision"
+        targetRef="EndEvent_Approved">
+      <bpmn:conditionExpression
+          xsi:type="bpmn:tFormalExpression">
+        ${approved == true}
+      </bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow
+        id="Flow_Rejected"
+        sourceRef="Gateway_Decision"
+        targetRef="EndEvent_Rejected">
+      <bpmn:conditionExpression
+          xsi:type="bpmn:tFormalExpression">
+        ${approved == false}
+      </bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+
+  </bpmn:process>
+</bpmn:definitions>
