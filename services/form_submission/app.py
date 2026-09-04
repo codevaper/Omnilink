@@ -9,8 +9,10 @@ import os
 import uuid
 import json
 
+
 app = Flask(__name__)
 CORS(app)
+
 
 POSTGRES_CONFIG = {
     "host": os.getenv("POSTGRES_HOST", "localhost"),
@@ -19,6 +21,7 @@ POSTGRES_CONFIG = {
     "user": os.getenv("POSTGRES_USER", "omnilinkadmin"),
     "password": os.getenv("POSTGRES_PASSWORD", "omnilinkpass123"),
 }
+
 
 MONGO_URI = os.getenv(
     "MONGO_URI_FORMS",
@@ -30,8 +33,10 @@ MONGO_DB = os.getenv(
     "omnilink_forms"
 )
 
+
 SUBMISSIONS_COLLECTION = "submitted_applications"
 AUDIT_COLLECTION = "application_audit"
+
 
 KAFKA_BOOTSTRAP_SERVERS = os.getenv(
     "KAFKA_BOOTSTRAP_SERVERS",
@@ -39,6 +44,37 @@ KAFKA_BOOTSTRAP_SERVERS = os.getenv(
 )
 
 KAFKA_TOPIC = "application.submitted"
+
+
+KAFKA_SECURITY_PROTOCOL = os.getenv(
+    "KAFKA_SECURITY_PROTOCOL",
+    "PLAINTEXT"
+)
+
+KAFKA_SASL_MECHANISMS = os.getenv(
+    "KAFKA_SASL_MECHANISMS",
+    "PLAIN"
+)
+
+KAFKA_USERNAME = os.getenv(
+    "KAFKA_USERNAME",
+    ""
+)
+
+KAFKA_PASSWORD = os.getenv(
+    "KAFKA_PASSWORD",
+    ""
+)
+
+KAFKA_CA_CERT = os.getenv(
+    "KAFKA_CA_CERT",
+    ""
+)
+
+# Railway environment variables can contain either
+# real newlines or literal \n characters.
+if KAFKA_CA_CERT:
+    KAFKA_CA_CERT = KAFKA_CA_CERT.replace("\\n", "\n")
 
 
 FORM_COLLECTIONS = {
@@ -65,9 +101,62 @@ def get_pg_connection():
 
 
 def create_kafka_producer():
-    return Producer({
-        "bootstrap.servers": KAFKA_BOOTSTRAP_SERVERS
-    })
+    """
+    Create the Kafka producer.
+
+    Local development can use PLAINTEXT/localhost:9092.
+
+    Railway production uses Aiven Kafka with:
+      SASL_SSL
+      SCRAM-SHA-256
+      username/password
+      Aiven CA certificate
+    """
+
+    config = {
+        "bootstrap.servers": KAFKA_BOOTSTRAP_SERVERS,
+
+        # Prevent an unreachable broker from hanging
+        # the Gunicorn worker indefinitely.
+        "message.timeout.ms": 10000,
+        "request.timeout.ms": 10000,
+        "socket.timeout.ms": 10000,
+        "delivery.timeout.ms": 10000,
+    }
+
+    security_protocol = (
+        KAFKA_SECURITY_PROTOCOL or "PLAINTEXT"
+    ).strip().upper()
+
+    if security_protocol != "PLAINTEXT":
+        config["security.protocol"] = security_protocol
+
+        if KAFKA_SASL_MECHANISMS:
+            config["sasl.mechanisms"] = (
+                KAFKA_SASL_MECHANISMS.strip()
+            )
+
+        if KAFKA_USERNAME:
+            config["sasl.username"] = KAFKA_USERNAME
+
+        if KAFKA_PASSWORD:
+            config["sasl.password"] = KAFKA_PASSWORD
+
+        if KAFKA_CA_CERT:
+            config["ssl.ca.pem"] = KAFKA_CA_CERT
+
+    print(
+        "[form-submission] Kafka configuration: "
+        f"bootstrap={KAFKA_BOOTSTRAP_SERVERS}, "
+        f"security_protocol={security_protocol}, "
+        f"sasl_mechanisms={KAFKA_SASL_MECHANISMS}, "
+        f"username_configured={bool(KAFKA_USERNAME)}, "
+        f"password_configured={bool(KAFKA_PASSWORD)}, "
+        f"ca_configured={bool(KAFKA_CA_CERT)}",
+        flush=True,
+    )
+
+    return Producer(config)
 
 
 def delivery_report(err, msg):
@@ -207,6 +296,7 @@ def health():
 
     mongo_client = None
     pg_conn = None
+    producer = None
 
     try:
         mongo_client, db = get_mongo()
@@ -231,9 +321,12 @@ def health():
             pg_conn.close()
 
     try:
-        create_kafka_producer()
+        producer = create_kafka_producer()
     except Exception:
         kafka_status = "unavailable"
+    finally:
+        if producer:
+            producer.flush(2)
 
     return jsonify({
         "status": "ok",
@@ -484,7 +577,13 @@ def create_submission():
             callback=delivery_report,
         )
 
-        producer.flush()
+        remaining = producer.flush(10)
+
+        if remaining > 0:
+            raise RuntimeError(
+                "Kafka event was not delivered within "
+                "the 10-second timeout."
+            )
 
         response_document = dict(document)
         response_document.pop("_id", None)
@@ -501,6 +600,12 @@ def create_submission():
         }), 201
 
     except Exception as exc:
+        print(
+            f"[form-submission] submission failed "
+            f"{submission_id}: {exc}",
+            flush=True,
+        )
+
         return jsonify({
             "error": str(exc),
             "submission_id": submission_id,
@@ -508,7 +613,7 @@ def create_submission():
 
     finally:
         if producer:
-            producer.flush()
+            producer.flush(2)
 
         if client:
             client.close()
