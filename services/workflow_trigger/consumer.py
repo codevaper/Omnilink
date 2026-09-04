@@ -36,7 +36,8 @@ def start_process(event):
     if not unified_app_id:
         print(
             "[workflow-trigger] event missing "
-            "unified_app_id"
+            "unified_app_id",
+            flush=True,
         )
         return
 
@@ -150,18 +151,97 @@ def start_process(event):
     )
 
 
-def main():
+def build_kafka_config():
     bootstrap_servers = os.getenv(
         "KAFKA_BOOTSTRAP_SERVERS",
         "localhost:9092",
     )
 
-    consumer = Consumer({
+    security_protocol = os.getenv(
+        "KAFKA_SECURITY_PROTOCOL",
+        "PLAINTEXT",
+    )
+
+    sasl_mechanisms = os.getenv(
+        "KAFKA_SASL_MECHANISMS",
+        "SCRAM-SHA-256",
+    )
+
+    username = os.getenv("KAFKA_USERNAME")
+    password = os.getenv("KAFKA_PASSWORD")
+
+    ca_file = os.getenv(
+        "KAFKA_CA_CERT_FILE",
+        "aiven-ca.pem",
+    )
+
+    config = {
         "bootstrap.servers": bootstrap_servers,
         "group.id": "workflow-trigger",
         "auto.offset.reset": "earliest",
         "enable.auto.commit": True,
-    })
+        "security.protocol": security_protocol,
+        "sasl.mechanisms": sasl_mechanisms,
+    }
+
+    if username:
+        config["sasl.username"] = username
+
+    if password:
+        config["sasl.password"] = password
+
+    if security_protocol.upper() == "SASL_SSL":
+        if not os.path.isabs(ca_file):
+            ca_file = os.path.join(
+                os.path.dirname(
+                    os.path.dirname(
+                        os.path.dirname(
+                            os.path.abspath(__file__)
+                        )
+                    )
+                ),
+                ca_file,
+            )
+
+        if not os.path.exists(ca_file):
+            raise FileNotFoundError(
+                f"Kafka CA certificate not found: {ca_file}"
+            )
+
+        config["ssl.ca.location"] = ca_file
+
+    return config
+
+
+def main():
+    try:
+        kafka_config = build_kafka_config()
+    except Exception as e:
+        print(
+            f"[workflow-trigger] Kafka configuration error: {e}",
+            flush=True,
+        )
+        return
+
+    print(
+        "[workflow-trigger] Kafka configuration loaded "
+        f"for {kafka_config.get('bootstrap.servers')}",
+        flush=True,
+    )
+
+    print(
+        "[workflow-trigger] security protocol: "
+        f"{kafka_config.get('security.protocol')}",
+        flush=True,
+    )
+
+    print(
+        "[workflow-trigger] SASL mechanism: "
+        f"{kafka_config.get('sasl.mechanisms')}",
+        flush=True,
+    )
+
+    consumer = Consumer(kafka_config)
 
     consumer.subscribe([TOPIC])
 
