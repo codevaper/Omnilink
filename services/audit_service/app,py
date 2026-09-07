@@ -1,0 +1,290 @@
+"""
+OmniLink Audit Service
+Tracks every action: consent, prefill, submission, status changes
+Deployed as a standalone service on Railway
+"""
+
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+import psycopg2
+import os
+import json
+from datetime import datetime
+
+app = Flask(__name__)
+CORS(app)
+
+DATABASE_URL = os.environ.get('DATABASE_URL')
+
+if not DATABASE_URL:
+    print("WARNING: DATABASE_URL not set. Using fallback for local dev.")
+
+def get_db():
+    return psycopg2.connect(DATABASE_URL)
+
+# ── HEALTH CHECK ───────────────────────────────
+@app.route('/health', methods=['GET'])
+def health():
+    return jsonify({
+        'status': 'Audit Service Online',
+        'timestamp': datetime.now().isoformat(),
+        'service': 'omnilink-audit'
+    })
+
+# ── LOG AUDIT EVENT ────────────────────────────
+@app.route('/audit/log', methods=['POST'])
+def log_audit():
+    data = request.get_json()
+    
+    required_fields = ['actor_type', 'actor_id', 'action']
+    for field in required_fields:
+        if field not in data:
+            return jsonify({'error': f'{field} is required'}), 400
+    
+    try:
+        conn = get_db()
+        cur = conn.cursor()
+        
+        cur.execute("""
+            INSERT INTO audit_logs (
+                actor_type, actor_id, action, citizen_id, 
+                target_form, fields_affected, purpose, 
+                correlation_id, ip_address, metadata, status
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            RETURNING id, timestamp
+        """, (
+            data['actor_type'],
+            data['actor_id'],
+            data['action'],
+            data.get('citizen_id'),
+            data.get('target_form'),
+            json.dumps(data.get('fields_affected', {})),
+            data.get('purpose'),
+            data.get('correlation_id'),
+            request.remote_addr,
+            json.dumps(data.get('metadata', {})),
+            data.get('status', 'success')
+        ))
+        
+        result = cur.fetchone()
+        conn.commit()
+        cur.close()
+        conn.close()
+        
+        return jsonify({
+            'audit_id': result[0],
+            'timestamp': result[1].isoformat(),
+            'status': 'logged'
+        }), 201
+        
+    except Exception as e:
+        print(f"[Audit] Error logging: {e}")
+        return jsonify({'error': str(e)}), 500
+
+# ── GET AUDIT FOR CITIZEN ──────────────────────
+@app.route('/audit/citizen/<citizen_id>', methods=['GET'])
+def get_citizen_audit(citizen_id):
+    limit = int(request.args.get('limit', 50))
+    
+    try:
+        conn = get_db()
+        cur = conn.cursor()
+        
+        cur.execute("""
+            SELECT id, timestamp, actor_type, actor_id, action, 
+                   target_form, fields_affected, purpose, 
+                   correlation_id, status
+            FROM audit_logs
+            WHERE citizen_id = %s
+            ORDER BY timestamp DESC
+            LIMIT %s
+        """, (citizen_id, limit))
+        
+        rows = cur.fetchall()
+        cur.close()
+        conn.close()
+        
+        events = [{
+            'audit_id': row[0],
+            'timestamp': row[1].isoformat(),
+            'actor_type': row[2],
+            'actor_id': row[3],
+            'action': row[4],
+            'target_form': row[5],
+            'fields_affected': row[6] if isinstance(row[6], dict) else json.loads(row[6] or '{}'),
+            'purpose': row[7],
+            'correlation_id': row[8],
+            'status': row[9]
+        } for row in rows]
+        
+        return jsonify({
+            'citizen_id': citizen_id,
+            'total_events': len(events),
+            'events': events
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+# ── GET ALL AUDIT EVENTS (ADMIN) ───────────────
+@app.route('/audit/all', methods=['GET'])
+def get_all_audit():
+    limit = int(request.args.get('limit', 100))
+    action_filter = request.args.get('action')
+    actor_type = request.args.get('actor_type')
+    
+    try:
+        conn = get_db()
+        cur = conn.cursor()
+        
+        query = """
+            SELECT id, timestamp, actor_type, actor_id, action, 
+                   citizen_id, target_form, purpose, correlation_id, status
+            FROM audit_logs
+        """
+        conditions = []
+        params = []
+        
+        if action_filter:
+            conditions.append("action = %s")
+            params.append(action_filter)
+        
+        if actor_type:
+            conditions.append("actor_type = %s")
+            params.append(actor_type)
+        
+        if conditions:
+            query += " WHERE " + " AND ".join(conditions)
+        
+        query += " ORDER BY timestamp DESC LIMIT %s"
+        params.append(limit)
+        
+        cur.execute(query, params)
+        rows = cur.fetchall()
+        cur.close()
+        conn.close()
+        
+        events = [{
+            'audit_id': row[0],
+            'timestamp': row[1].isoformat(),
+            'actor_type': row[2],
+            'actor_id': row[3],
+            'action': row[4],
+            'citizen_id': row[5],
+            'target_form': row[6],
+            'purpose': row[7],
+            'correlation_id': row[8],
+            'status': row[9]
+        } for row in rows]
+        
+        return jsonify({
+            'total_events': len(events),
+            'events': events
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+# ── GET AUDIT SUMMARY STATS ────────────────────
+@app.route('/audit/stats', methods=['GET'])
+def get_audit_stats():
+    try:
+        conn = get_db()
+        cur = conn.cursor()
+        
+        cur.execute("""
+            SELECT 
+                action,
+                COUNT(*) as count,
+                COUNT(DISTINCT citizen_id) as unique_citizens
+            FROM audit_logs
+            GROUP BY action
+            ORDER BY count DESC
+        """)
+        
+        rows = cur.fetchall()
+        cur.close()
+        conn.close()
+        
+        stats = [{
+            'action': row[0],
+            'count': row[1],
+            'unique_citizens': row[2]
+        } for row in rows]
+        
+        return jsonify({
+            'total_actions': len(stats),
+            'stats': stats
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+# ── GET QUALITY SCORE ──────────────────────────
+@app.route('/quality/<citizen_id>', methods=['GET'])
+def get_quality_score(citizen_id):
+    try:
+        conn = get_db()
+        cur = conn.cursor()
+        
+        cur.execute("""
+            SELECT citizen_id, quality_score, quality_category, 
+                   missing_fields, invalid_fields, last_checked
+            FROM citizen_quality_scores
+            WHERE citizen_id = %s
+        """, (citizen_id,))
+        
+        row = cur.fetchone()
+        cur.close()
+        conn.close()
+        
+        if not row:
+            return jsonify({'error': 'Citizen not found'}), 404
+        
+        return jsonify({
+            'citizen_id': row[0],
+            'quality_score': row[1],
+            'quality_category': row[2],
+            'missing_fields': row[3] if isinstance(row[3], list) else json.loads(row[3] or '[]'),
+            'invalid_fields': row[4] if isinstance(row[4], dict) else json.loads(row[4] or '{}'),
+            'last_checked': row[5].isoformat()
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+# ── GET ALL QUALITY SCORES ─────────────────────
+@app.route('/quality/all', methods=['GET'])
+def get_all_quality_scores():
+    try:
+        conn = get_db()
+        cur = conn.cursor()
+        
+        cur.execute("""
+            SELECT quality_category, COUNT(*), ROUND(AVG(quality_score), 1)
+            FROM citizen_quality_scores
+            GROUP BY quality_category
+            ORDER BY quality_category
+        """)
+        
+        rows = cur.fetchall()
+        cur.close()
+        conn.close()
+        
+        categories = [{
+            'category': row[0],
+            'count': row[1],
+            'avg_score': row[2]
+        } for row in rows]
+        
+        return jsonify({
+            'total_categories': len(categories),
+            'categories': categories
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+if __name__ == '__main__':
+    port = int(os.environ.get('PORT', 5005))
+    app.run(debug=False, host='0.0.0.0', port=port)

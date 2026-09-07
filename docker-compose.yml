@@ -1,5 +1,3 @@
-
-
 services:
 
   # ---------------------------------------------------------
@@ -94,6 +92,24 @@ services:
       - "8080:8080"
     volumes:
       - camunda_data:/camunda/data
+
+  # ---------------------------------------------------------
+  # NEW: AUDIT SERVICE
+  # Tracks every action: consent, prefill, submission, status
+  # ---------------------------------------------------------
+  audit-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: omnilink-audit
+    command: gunicorn services.audit_service.app:app --bind 0.0.0.0:5005
+    ports:
+      - "5005:5005"
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - PORT=5005
+    depends_on:
+      - postgres
 
 volumes:
   kafka_data:
