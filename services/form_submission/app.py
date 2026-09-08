@@ -6,10 +6,14 @@ import psycopg2
 from psycopg2.extras import RealDictCursor
 from datetime import datetime, timezone
 import os
+import sys
 import uuid
 import json
 import requests
 import re
+
+# Add parent directory for middleware import
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 app = Flask(__name__)
 CORS(app)
@@ -45,6 +49,7 @@ if KAFKA_CA_CERT:
     KAFKA_CA_CERT = KAFKA_CA_CERT.replace("\\n", "\n")
 
 AUDIT_SERVICE_URL = os.getenv("AUDIT_SERVICE_URL", "http://localhost:5005")
+JWT_SECRET = os.getenv("JWT_SECRET", "omnilink-dev-secret-key-change-in-production")
 
 FORM_COLLECTIONS = {
     "ration_card": "ration_card_forms",
@@ -82,6 +87,63 @@ QUALITY_RULES = {
         "message": "Must be 9-18 digits",
     },
 }
+
+
+# ── JWT AUTH HELPERS ───────────────────────────
+def verify_jwt(token):
+    """Verify JWT token."""
+    import jwt as pyjwt
+    try:
+        return pyjwt.decode(token, JWT_SECRET, algorithms=["HS256"])
+    except pyjwt.ExpiredSignatureError:
+        raise Exception("Token has expired")
+    except pyjwt.InvalidTokenError:
+        raise Exception("Invalid token")
+
+
+def get_token_from_request():
+    """Extract token from Authorization header."""
+    auth_header = request.headers.get("Authorization", "")
+    return auth_header.replace("Bearer ", "")
+
+
+def require_citizen(f):
+    """Decorator: only citizens can access."""
+    from functools import wraps
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        token = get_token_from_request()
+        if not token:
+            return jsonify({"error": "Authentication required."}), 401
+        try:
+            payload = verify_jwt(token)
+            if payload["role"] != "citizen":
+                return jsonify({"error": "Citizen access required.", "your_role": payload["role"]}), 403
+            request.user = payload
+            return f(*args, **kwargs)
+        except Exception as e:
+            return jsonify({"error": str(e)}), 401
+    return wrapper
+
+
+def require_officer(f):
+    """Decorator: only officers/admins can access."""
+    from functools import wraps
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        token = get_token_from_request()
+        if not token:
+            return jsonify({"error": "Authentication required."}), 401
+        try:
+            payload = verify_jwt(token)
+            if payload["role"] not in ("officer", "admin"):
+                return jsonify({"error": "Officer access required.", "your_role": payload["role"]}), 403
+            request.user = payload
+            return f(*args, **kwargs)
+        except Exception as e:
+            return jsonify({"error": str(e)}), 401
+    return wrapper
+
 
 # ── HELPERS ────────────────────────────────────
 def get_mongo():
@@ -124,7 +186,7 @@ def log_audit(
 
 
 def validate_data_quality(form_data):
-    """Check form data against quality rules. Returns (is_valid, issues)."""
+    """Check form data against quality rules."""
     issues = []
 
     for field, rule in QUALITY_RULES.items():
@@ -199,10 +261,7 @@ def verify_consent(citizen_id, consent_id, target_form):
             consent = cur.fetchone()
 
             if not consent:
-                return False, {
-                    "error": "Consent record not found.",
-                    "consent_id": consent_id,
-                }
+                return False, {"error": "Consent record not found.", "consent_id": consent_id}
 
             consent = dict(consent)
 
@@ -228,18 +287,12 @@ def verify_consent(citizen_id, consent_id, target_form):
                 }
 
             if consent["revoked_at"] is not None:
-                return False, {
-                    "error": "Consent has been revoked.",
-                    "consent_id": consent_id,
-                }
+                return False, {"error": "Consent has been revoked.", "consent_id": consent_id}
 
             if consent["expires_at"] is not None:
                 now = datetime.now(timezone.utc)
                 if consent["expires_at"] <= now:
-                    return False, {
-                        "error": "Consent has expired.",
-                        "consent_id": consent_id,
-                    }
+                    return False, {"error": "Consent has expired.", "consent_id": consent_id}
 
             return True, consent
     finally:
@@ -301,12 +354,14 @@ def health():
         "postgres": postgres_status,
         "kafka": kafka_status,
         "audit": audit_status,
+        "rbac": "enabled",
         "topic": KAFKA_TOPIC,
     })
 
 
-# ── GET ALL SUBMISSIONS ────────────────────────
+# ── GET ALL SUBMISSIONS (OFFICER/ADMIN) ────────
 @app.get("/submissions")
+@require_officer
 def get_submissions():
     client, db = get_mongo()
     try:
@@ -332,8 +387,9 @@ def get_submissions():
         client.close()
 
 
-# ── GET SUBMISSION ─────────────────────────────
+# ── GET SUBMISSION (OFFICER/ADMIN) ─────────────
 @app.get("/submissions/<submission_id>")
+@require_officer
 def get_submission(submission_id):
     client, db = get_mongo()
     try:
@@ -359,8 +415,9 @@ def get_submission(submission_id):
         client.close()
 
 
-# ── GET SUBMISSION AUDIT ───────────────────────
+# ── GET SUBMISSION AUDIT (OFFICER/ADMIN) ───────
 @app.get("/submissions/<submission_id>/audit")
+@require_officer
 def get_audit(submission_id):
     client, db = get_mongo()
     try:
@@ -384,15 +441,14 @@ def get_audit(submission_id):
         client.close()
 
 
-# ── CREATE SUBMISSION ──────────────────────────
+# ── CREATE SUBMISSION (CITIZEN ONLY) ───────────
 @app.post("/submissions")
+@require_citizen
 def create_submission():
     data = request.get_json(silent=True)
 
     if not isinstance(data, dict):
-        return jsonify({
-            "error": "Request body must be a JSON object."
-        }), 400
+        return jsonify({"error": "Request body must be a JSON object."}), 400
 
     citizen_id = data.get("citizen_id")
     target_form = data.get("target_form")
@@ -422,6 +478,10 @@ def create_submission():
         consent_id = int(consent_id)
     except (TypeError, ValueError):
         return jsonify({"error": "consent_id must be an integer."}), 400
+
+    # Ensure JWT user matches citizen_id
+    if request.user.get("user_id") != citizen_id:
+        return jsonify({"error": "You can only submit for yourself."}), 403
 
     # Verify consent
     consent_ok, consent_result = verify_consent(citizen_id, consent_id, target_form)
@@ -499,10 +559,8 @@ def create_submission():
     try:
         client, db = get_mongo()
 
-        # Insert submission
         db[SUBMISSIONS_COLLECTION].insert_one(document)
 
-        # Insert Mongo audit
         db[AUDIT_COLLECTION].insert_one({
             "audit_id": f"AUD-{uuid.uuid4().hex[:12].upper()}",
             "submission_id": submission_id,
@@ -515,7 +573,6 @@ def create_submission():
             "synthetic_data": True,
         })
 
-        # PostgreSQL audit
         log_audit(
             actor_type="citizen",
             actor_id=citizen_id,
@@ -527,7 +584,6 @@ def create_submission():
             correlation_id=submission_id,
         )
 
-        # Kafka event
         producer = create_kafka_producer()
         producer.produce(
             KAFKA_TOPIC,
@@ -538,9 +594,7 @@ def create_submission():
 
         remaining = producer.flush(10)
         if remaining > 0:
-            raise RuntimeError(
-                "Kafka event was not delivered within the 10-second timeout."
-            )
+            raise RuntimeError("Kafka event was not delivered within the 10-second timeout.")
 
         response_document = dict(document)
         response_document.pop("_id", None)
@@ -555,10 +609,7 @@ def create_submission():
 
     except Exception as exc:
         print(f"[form-submission] submission failed {submission_id}: {exc}", flush=True)
-        return jsonify({
-            "error": str(exc),
-            "submission_id": submission_id,
-        }), 500
+        return jsonify({"error": str(exc), "submission_id": submission_id}), 500
 
     finally:
         if producer:
@@ -567,19 +618,18 @@ def create_submission():
             client.close()
 
 
-# ── UPDATE SUBMISSION STATUS ───────────────────
+# ── UPDATE SUBMISSION STATUS (OFFICER ONLY) ────
 @app.post("/submissions/<submission_id>/status")
+@require_officer
 def update_submission_status(submission_id):
     data = request.get_json(silent=True)
 
     if not isinstance(data, dict):
-        return jsonify({
-            "error": "Request body must be a JSON object."
-        }), 400
+        return jsonify({"error": "Request body must be a JSON object."}), 400
 
     new_status = data.get("status")
     details = data.get("details") or {}
-    officer_id = data.get("officer_id", details.get("source", "officer"))
+    officer_id = data.get("officer_id", request.user.get("user_id", "officer"))
 
     allowed_statuses = {"SUBMITTED", "UNDER_REVIEW", "APPROVED", "REJECTED"}
 
@@ -622,7 +672,6 @@ def update_submission_status(submission_id):
             "synthetic_data": True,
         })
 
-        # PostgreSQL audit
         log_audit(
             actor_type="officer",
             actor_id=str(officer_id),

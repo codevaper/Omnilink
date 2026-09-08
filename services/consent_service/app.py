@@ -29,6 +29,9 @@ AUDIT_SERVICE_URL = os.getenv(
     "http://localhost:5005"
 )
 
+# ── JWT CONFIG ─────────────────────────────────
+JWT_SECRET = os.getenv("JWT_SECRET", "omnilink-dev-secret-key-change-in-production")
+
 # ── FIELD LABELS ───────────────────────────────
 FIELD_LABELS = {
     "first_name": "First Name",
@@ -180,6 +183,62 @@ FORM_REQUIRED_FIELDS = {
 }
 
 
+# ── JWT AUTH HELPERS ───────────────────────────
+def verify_jwt(token):
+    """Verify JWT token. Returns payload or raises Exception."""
+    import jwt as pyjwt
+    try:
+        return pyjwt.decode(token, JWT_SECRET, algorithms=["HS256"])
+    except pyjwt.ExpiredSignatureError:
+        raise Exception("Token has expired")
+    except pyjwt.InvalidTokenError:
+        raise Exception("Invalid token")
+
+
+def get_token_from_request():
+    """Extract token from Authorization header."""
+    auth_header = request.headers.get("Authorization", "")
+    return auth_header.replace("Bearer ", "")
+
+
+def require_citizen(f):
+    """Decorator: only citizens can access."""
+    from functools import wraps
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        token = get_token_from_request()
+        if not token:
+            return jsonify({"error": "Authentication required."}), 401
+        try:
+            payload = verify_jwt(token)
+            if payload["role"] != "citizen":
+                return jsonify({"error": "Citizen access required.", "your_role": payload["role"]}), 403
+            request.user = payload
+            return f(*args, **kwargs)
+        except Exception as e:
+            return jsonify({"error": str(e)}), 401
+    return wrapper
+
+
+def require_officer(f):
+    """Decorator: only officers/admins can access."""
+    from functools import wraps
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        token = get_token_from_request()
+        if not token:
+            return jsonify({"error": "Authentication required."}), 401
+        try:
+            payload = verify_jwt(token)
+            if payload["role"] not in ("officer", "admin"):
+                return jsonify({"error": "Officer access required.", "your_role": payload["role"]}), 403
+            request.user = payload
+            return f(*args, **kwargs)
+        except Exception as e:
+            return jsonify({"error": str(e)}), 401
+    return wrapper
+
+
 # ── AUDIT LOGGING ──────────────────────────────
 def log_audit(
     actor_type,
@@ -298,6 +357,7 @@ def health():
             "port": 5007,
             "database": "connected",
             "audit_service": AUDIT_SERVICE_URL,
+            "rbac": "enabled",
         })
     except Exception as exc:
         return jsonify({
@@ -309,7 +369,7 @@ def health():
         }), 500
 
 
-# ── GET FORMS ──────────────────────────────────
+# ── GET FORMS (PUBLIC) ─────────────────────────
 @app.get("/consent/forms")
 def get_form_requirements():
     forms = []
@@ -338,7 +398,7 @@ def get_form_requirements():
     })
 
 
-# ── GET FIELDS FOR CITIZEN ─────────────────────
+# ── GET FIELDS (PUBLIC) ────────────────────────
 @app.get("/consent/fields/<citizen_id>")
 def get_available_fields(citizen_id):
     target_form = request.args.get("target_form")
@@ -414,8 +474,9 @@ def get_available_fields(citizen_id):
     })
 
 
-# ── CREATE CONSENT REQUEST ─────────────────────
+# ── CREATE CONSENT REQUEST (CITIZEN ONLY) ──────
 @app.post("/consent/request")
+@require_citizen
 def create_consent():
     data = request.get_json(silent=True)
 
@@ -461,6 +522,12 @@ def create_consent():
             "error": "Citizen not found.",
             "citizen_id": citizen_id,
         }), 404
+
+    # Ensure JWT user matches citizen_id
+    if request.user.get("user_id") != citizen_id:
+        return jsonify({
+            "error": "You can only create consent for yourself."
+        }), 403
 
     required_fields = set(FORM_REQUIRED_FIELDS[target_form])
 
@@ -539,8 +606,9 @@ def create_consent():
         conn.close()
 
 
-# ── APPROVE CONSENT ────────────────────────────
+# ── APPROVE CONSENT (CITIZEN ONLY) ─────────────
 @app.post("/consent/<int:consent_id>/approve")
+@require_citizen
 def approve_consent(consent_id):
     data = request.get_json(silent=True)
 
@@ -583,6 +651,12 @@ def approve_consent(consent_id):
                     "error": "Consent record not found.",
                     "consent_id": consent_id,
                 }), 404
+
+            # Ensure JWT user matches consent owner
+            if request.user.get("user_id") != existing["citizen_id"]:
+                return jsonify({
+                    "error": "You can only approve your own consent."
+                }), 403
 
             target_form = existing["target_form"]
             citizen_id = existing["citizen_id"]
@@ -662,8 +736,9 @@ def approve_consent(consent_id):
         conn.close()
 
 
-# ── REVOKE CONSENT ─────────────────────────────
+# ── REVOKE CONSENT (CITIZEN ONLY) ──────────────
 @app.post("/consent/<int:consent_id>/revoke")
+@require_citizen
 def revoke_consent(consent_id):
     conn = get_connection()
 
@@ -679,6 +754,11 @@ def revoke_consent(consent_id):
                 (consent_id,),
             )
             existing = cur.fetchone()
+
+            if existing and request.user.get("user_id") != existing["citizen_id"]:
+                return jsonify({
+                    "error": "You can only revoke your own consent."
+                }), 403
 
             cur.execute(
                 """
@@ -731,7 +811,7 @@ def revoke_consent(consent_id):
         conn.close()
 
 
-# ── GET CONSENT ────────────────────────────────
+# ── GET CONSENT (PUBLIC) ───────────────────────
 @app.get("/consent/<int:consent_id>")
 def get_consent(consent_id):
     conn = get_connection()
@@ -771,7 +851,7 @@ def get_consent(consent_id):
         conn.close()
 
 
-# ── GET CITIZEN CONSENTS ───────────────────────
+# ── GET CITIZEN CONSENTS (PUBLIC) ──────────────
 @app.get("/consent/citizen/<citizen_id>")
 def get_citizen_consents(citizen_id):
     if not validate_citizen(citizen_id):
