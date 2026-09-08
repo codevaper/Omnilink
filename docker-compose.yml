@@ -94,7 +94,7 @@ services:
       - camunda_data:/camunda/data
 
   # ---------------------------------------------------------
-  # NEW: AUDIT SERVICE
+  # AUDIT SERVICE
   # Tracks every action: consent, prefill, submission, status
   # ---------------------------------------------------------
   audit-service:
@@ -108,6 +108,52 @@ services:
     environment:
       - DATABASE_URL=${DATABASE_URL}
       - PORT=5005
+    depends_on:
+      - postgres
+
+  # ---------------------------------------------------------
+  # AUTH SERVICE
+  # JWT authentication + RBAC
+  # ---------------------------------------------------------
+  auth-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: omnilink-auth
+    command: gunicorn services.auth_service.app:app --bind 0.0.0.0:5006
+    ports:
+      - "5006:5006"
+    environment:
+      - POSTGRES_HOST=${POSTGRES_HOST:-postgres}
+      - POSTGRES_PORT=${POSTGRES_PORT:-5432}
+      - POSTGRES_DB=${POSTGRES_DB:-ration_card_db}
+      - POSTGRES_USER=${POSTGRES_USER:-omnilinkadmin}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-omnilinkpass123}
+      - JWT_SECRET=${JWT_SECRET:-omnilink-dev-secret-key-change-in-production}
+      - PORT=5006
+    depends_on:
+      - postgres
+
+  # ---------------------------------------------------------
+  # CONNECTOR SERVICE
+  # Reusable connectors for legacy and modern systems
+  # REST, CSV, SOAP, Database (server-side only)
+  # ---------------------------------------------------------
+  connector-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: omnilink-connector
+    command: gunicorn services.connector_service.app:app --bind 0.0.0.0:5008
+    ports:
+      - "5008:5008"
+    environment:
+      - POSTGRES_HOST=${POSTGRES_HOST:-postgres}
+      - POSTGRES_PORT=${POSTGRES_PORT:-5432}
+      - POSTGRES_DB=${POSTGRES_DB:-ration_card_db}
+      - POSTGRES_USER=${POSTGRES_USER:-omnilinkadmin}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-omnilinkpass123}
+      - PORT=5008
     depends_on:
       - postgres
 
