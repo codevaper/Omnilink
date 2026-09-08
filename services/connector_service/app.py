@@ -20,16 +20,16 @@ from psycopg2.extras import RealDictCursor
 import requests
 import xml.etree.ElementTree as ET
 from datetime import datetime
-import sys
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-from shared.error_handlers import register_error_handlers
 
 # After app = Flask(__name__) and CORS:
 register_error_handlers(app)
 
 app = Flask(__name__)
 CORS(app)
+import sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from shared.error_handlers import register_error_handlers
+register_error_handlers(app)
 
 # ── CONFIG ─────────────────────────────────────
 POSTGRES_CONFIG = {
